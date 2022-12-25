@@ -3,19 +3,44 @@ const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
 const userValidation = require('../../validations/user.validation');
 const userController = require('../../controllers/user.controller');
+// get the enum roles
+const { roles } = require('../../config/rolesEnum');
 
 const router = express.Router();
 
 router
   .route('/')
-  .post(auth('manageUsers'), validate(userValidation.createUser), userController.createUser)
-  .get(auth('getUsers'), validate(userValidation.getUsers), userController.getUsers);
+  .post(auth(roles.ADMIN, roles.MANAGER), validate(userValidation.createUser), userController.createUser)
+  .get(auth(roles.ADMIN, roles.MANAGER), validate(userValidation.getUsers), userController.getUsers);
 
-router
-  .route('/:userId')
-  .get(auth('getUsers'), validate(userValidation.getUser), userController.getUser)
-  .patch(auth('manageUsers'), validate(userValidation.updateUser), userController.updateUser)
-  .delete(auth('manageUsers'), validate(userValidation.deleteUser), userController.deleteUser);
+router.get('/:userId', auth([roles.ADMIN, roles.MANAGER]), validate(userValidation.getUser), userController.getUser);
+
+// activate a user
+router.put(
+  '/activate',
+  auth(roles.ADMIN, roles.MANAGER),
+  validate(userValidation.activateUserByUserId),
+  userController.activateUserByUserId
+);
+
+// deactivate a user
+router.put(
+  '/deactivate',
+  auth(roles.ADMIN, roles.MANAGER),
+  validate(userValidation.deactivateUserByUserId),
+  userController.deactivateUserByUserId
+);
+
+// assign a role to a user
+router.put('/assign-role', auth(roles.ADMIN), validate(userValidation.assignRoleToUser), userController.assignRoleToUser);
+
+// remove a role from a user
+router.put(
+  '/remove-role',
+  auth(roles.ADMIN),
+  validate(userValidation.removeRoleFromUser),
+  userController.removeRoleFromUser
+);
 
 module.exports = router;
 
@@ -249,4 +274,147 @@ module.exports = router;
  *         $ref: '#/components/responses/Forbidden'
  *       "404":
  *         $ref: '#/components/responses/NotFound'
+ *
+ */
+
+/**
+ * @swagger
+ * /users/activate:
+ *   put:
+ *     summary: Activate a user
+ *     description: Admins and managers can activate users.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                userId:
+ *                  type: string
+ *                  description: User id
+ *            example:
+ *              userId: 5f0b5c9e7c7d1d2b8c8b4567
+ *     responses:
+ *       "200":
+ *         description: No content
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
+ *       "403":
+ *         $ref: '#/components/responses/Forbidden'
+ *       "404":
+ *         $ref: '#/components/responses/NotFound'
+ *
+ */
+
+/**
+ * @swagger
+ * /users/deactivate:
+ *   put:
+ *     summary: Deactivate a user
+ *     description: Admins and managers can deactivate users.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                userId:
+ *                  type: string
+ *                  description: User id
+ *            example:
+ *              userId: 5f0b5c9e7c7d1d2b8c8b4567
+ *     responses:
+ *       "200":
+ *         description: No content
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
+ *       "403":
+ *         $ref: '#/components/responses/Forbidden'
+ *       "404":
+ *         $ref: '#/components/responses/NotFound'
+ *
+ */
+
+/**
+ * @swagger
+ * /users/assign-role:
+ *   put:
+ *     summary: Assign a role to a user
+ *     description: Admins can assign roles to users.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                userId:
+ *                  type: string
+ *                  description: User id
+ *                role:
+ *                  type: string
+ *                  enum: [user, manager, bloger]
+ *                  description: Role to assign
+ *            example:
+ *              userId: 5f0b5c9e7c7d1d2b8c8b4567
+ *              role: manager
+ *     responses:
+ *       "200":
+ *         description: No content
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
+ *       "403":
+ *         $ref: '#/components/responses/Forbidden'
+ *       "404":
+ *         $ref: '#/components/responses/NotFound'
+ *
+ */
+
+/**
+ * @swagger
+ * /users/remove-role:
+ *   put:
+ *     summary: Remove a role from a user
+ *     description: Admins can remove roles from users.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                userId:
+ *                  type: string
+ *                  description: User id
+ *                role:
+ *                  type: string
+ *                  enum: [user, manager, bloger]
+ *                  description: Role to remove
+ *            example:
+ *              userId: 5f0b5c9e7c7d1d2b8c8b4567
+ *              role: manager
+ *     responses:
+ *       "200":
+ *         description: No content
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
+ *       "403":
+ *         $ref: '#/components/responses/Forbidden'
+ *       "404":
+ *         $ref: '#/components/responses/NotFound'
+ *
  */

@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const { User } = require('../models');
 const ApiError = require('../utils/ApiError');
+const { roles } = require('../config/rolesEnum');
 
 /**
  * Create a user
@@ -34,7 +35,11 @@ const queryUsers = async (filter, options) => {
  * @returns {Promise<User>}
  */
 const getUserById = async (id) => {
-  return User.findById(id);
+  const user = await User.findById(id);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+  return user;
 };
 
 /**
@@ -54,9 +59,7 @@ const getUserByEmail = async (email) => {
  */
 const updateUserById = async (userId, updateBody) => {
   const user = await getUserById(userId);
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-  }
+
   if (updateBody.email && (await User.isEmailTaken(updateBody.email, userId))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
@@ -72,10 +75,63 @@ const updateUserById = async (userId, updateBody) => {
  */
 const deleteUserById = async (userId) => {
   const user = await getUserById(userId);
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-  }
+
   await user.remove();
+  return user;
+};
+
+/**
+ * Activate a user by userId
+ * @param {ObjectId} userId
+ * @returns {Promise<User>}
+ */
+const activateUserByUserId = async (userId) => {
+  const user = await getUserById(userId);
+
+  user.isActive = true;
+  await user.save();
+  return user;
+};
+
+/**
+ * Deactivate a user by userId
+ * @param {ObjectId} userId
+ * @returns {Promise<User>}
+ */
+const deactivateUserByUserId = async (userId) => {
+  const user = await getUserById(userId);
+
+  user.isActive = false;
+  await user.save();
+  return user;
+};
+
+const assignRoleToUser = async (userId, role) => {
+  const user = await getUserById(userId);
+
+  if (role === roles.ADMIN) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Not allow to assign admin role to user');
+  }
+
+  if (user.roles.includes(role)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'User already has role');
+  }
+
+  user.roles = [...user.roles, role];
+  await user.save();
+  return user;
+};
+
+const removeRoleFromUser = async (userId, role) => {
+  const user = await getUserById(userId);
+
+  if (role === roles.ADMIN) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Not allow to remove admin role from user');
+  }
+
+  user.roles = user.roles.filter((r) => r !== role);
+
+  await user.save();
   return user;
 };
 
@@ -86,4 +142,8 @@ module.exports = {
   getUserByEmail,
   updateUserById,
   deleteUserById,
+  activateUserByUserId,
+  deactivateUserByUserId,
+  assignRoleToUser,
+  removeRoleFromUser,
 };

@@ -1,7 +1,6 @@
 const passport = require('passport');
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
-const { ROLES } = require('../config/roles');
 
 const verifyCallback = (req, resolve, reject, requiredRoles) => async (err, user, info) => {
   if (err || info || !user) {
@@ -10,11 +9,16 @@ const verifyCallback = (req, resolve, reject, requiredRoles) => async (err, user
   req.user = user;
 
   if (requiredRoles.length) {
-    const userRoles = ROLES.get(user.role);
-    const hasRequiredRoles = requiredRoles.every((requiredRole) => userRoles.includes(requiredRole));
+    const userRoles = Object.keys(user.roles).map((key) => user.roles[key]);
+
+    const hasRequiredRoles = requiredRoles.some((role) => userRoles.includes(role));
     if (!hasRequiredRoles && req.params.userId !== user.id) {
       return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
     }
+  }
+
+  if (!user.isActive) {
+    return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Account is not active'));
   }
 
   resolve();

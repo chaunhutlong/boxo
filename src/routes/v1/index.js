@@ -3,6 +3,18 @@ const authRoute = require('./auth.route');
 const userRoute = require('./user.route');
 const docsRoute = require('./docs.route');
 const config = require('../../config/config');
+// const publisherRoute = require('./publisher.route');
+// const bookRoute = require('./book.route');
+// const genreRoute = require('./genre.route');
+// const authorRoute = require('./author.route');
+// const orderRoute = require('./order.route');
+// const statisticRoute = require('./statistic.route');
+// const profileRoute = require('./profile.route');
+// const addressRoute = require('./address.route');
+// const discountRoute = require('./discount.route');
+// const reviewRoute = require('./review.route');
+// const cartRoute = require('./cart.route');
+// const checkoutRoute = require('./checkout.route');
 
 const router = express.Router();
 
@@ -15,6 +27,54 @@ const defaultRoutes = [
     path: '/users',
     route: userRoute,
   },
+  // {
+  //   path: '/publishers',
+  //   route: publisherRoute,
+  // },
+  // {
+  //   path: '/books',
+  //   route: bookRoute,
+  // },
+  // {
+  //   path: '/genres',
+  //   route: genreRoute,
+  // },
+  // {
+  //   path: '/authors',
+  //   route: authorRoute,
+  // },
+  // {
+  //   path: '/orders',
+  //   route: orderRoute,
+  // },
+  // {
+  //   path: '/statistics',
+  //   route: statisticRoute,
+  // },
+  // {
+  //   path: '/profiles',
+  //   route: profileRoute,
+  // },
+  // {
+  //   path: '/addresses',
+  //   route: addressRoute,
+  // },
+  // {
+  //   path: '/discounts',
+  //   route: discountRoute,
+  // },
+  // {
+  //   path: '/reviews',
+  //   route: reviewRoute,
+  // },
+  // {
+  //   path: '/carts',
+  //   route: cartRoute,
+  // },
+  // {
+  //   path: '/checkout',
+  //   route: checkoutRoute,
+  // },
 ];
 
 const devRoutes = [

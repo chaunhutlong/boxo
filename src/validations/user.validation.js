@@ -1,12 +1,16 @@
 const Joi = require('joi');
 const { password, objectId } = require('./custom.validation');
+let { roles } = require('../config/rolesEnum');
+roles = Object.values(roles).filter((role) => role !== 'admin');
 
 const createUser = {
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required().custom(password),
     name: Joi.string().required(),
-    role: Joi.string().required().valid('user', 'admin'),
+    role: Joi.string()
+      .required()
+      .valid(...roles),
   }),
 };
 
@@ -45,10 +49,44 @@ const deleteUser = {
   }),
 };
 
+const activateUserByUserId = {
+  body: Joi.object().keys({
+    userId: Joi.string().custom(objectId),
+  }),
+};
+
+const deactivateUserByUserId = {
+  body: Joi.object().keys({
+    userId: Joi.string().custom(objectId),
+  }),
+};
+
+const assignRoleToUser = {
+  body: Joi.object().keys({
+    userId: Joi.string().custom(objectId),
+    role: Joi.string()
+      .required()
+      .valid(...roles),
+  }),
+};
+
+const removeRoleFromUser = {
+  body: Joi.object().keys({
+    userId: Joi.string().custom(objectId),
+    role: Joi.string()
+      .required()
+      .valid(...roles),
+  }),
+};
+
 module.exports = {
   createUser,
   getUsers,
   getUser,
   updateUser,
   deleteUser,
+  activateUserByUserId,
+  deactivateUserByUserId,
+  assignRoleToUser,
+  removeRoleFromUser,
 };

@@ -3,7 +3,7 @@ const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const { toJSON, paginate } = require('./plugins');
 const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
-const { roles } = require('../config/roles');
+const { roles } = require('../config/rolesEnum');
 
 const userSchema = mongoose.Schema(
   {
@@ -43,12 +43,20 @@ const userSchema = mongoose.Schema(
           enum: roles,
         },
       ],
-      default: ['user'],
+      default: [roles.USER],
       required: true,
     },
     isEmailVerified: {
       type: Boolean,
       default: false,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
     },
   },
   {

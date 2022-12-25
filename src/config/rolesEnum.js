@@ -1,4 +1,4 @@
-module.exports.ROLES = {
+module.exports.roles = {
   USER: 'user',
   MANAGER: 'manager',
   ADMIN: 'admin',

@@ -34,10 +34,34 @@ const deleteUser = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const activateUserByUserId = catchAsync(async (req, res) => {
+  const user = await userService.activateUserByUserId(req.body.userId);
+  res.send(user);
+});
+
+const deactivateUserByUserId = catchAsync(async (req, res) => {
+  const user = await userService.deactivateUserByUserId(req.body.userId);
+  res.send(user);
+});
+
+const assignRoleToUser = catchAsync(async (req, res) => {
+  const user = await userService.assignRoleToUser(req.body.userId, req.body.role);
+  res.send(user);
+});
+
+const removeRoleFromUser = catchAsync(async (req, res) => {
+  const user = await userService.removeRoleFromUser(req.body.userId, req.body.role);
+  res.send(user);
+});
+
 module.exports = {
   createUser,
   getUsers,
   getUser,
   updateUser,
   deleteUser,
+  activateUserByUserId,
+  deactivateUserByUserId,
+  assignRoleToUser,
+  removeRoleFromUser,
 };
