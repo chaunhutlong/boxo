@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON } = require('./plugins');
+const { toJSON, paginate } = require('./plugins');
 
 const publisherSchema = mongoose.Schema({
   name: {
@@ -8,11 +8,16 @@ const publisherSchema = mongoose.Schema({
   },
   address: {
     type: String,
-    required: true,
   },
   phone: {
     type: String,
-    required: true,
+    maxLength: 12,
+
+    validate: {
+      validator: function (v) {
+        return /^\d+$/.test(v);
+      },
+    },
   },
   email: {
     type: String,
@@ -22,18 +27,17 @@ const publisherSchema = mongoose.Schema({
   },
 });
 
-// add plugin that converts mongoose to json
 publisherSchema.plugin(toJSON);
+publisherSchema.plugin(paginate);
+
+publisherSchema.statics.isNameTaken = async function (name, excludePublisherId) {
+  const publisher = await this.findOne({ name, _id: { $ne: excludePublisherId } });
+  return !!publisher;
+};
 
 /**
  * @typedef Publisher
- * @property {string} name
- * @property {string} address
- * @property {string} phone
- * @property {string} email
- * @property {string} description
  */
-
 const Publisher = mongoose.model('Publisher', publisherSchema);
 
 module.exports = Publisher;

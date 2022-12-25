@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const { toJSON } = require('./plugins');
 
-// many-to-many relationship between Book and Discount
 const discountSchema = mongoose.Schema(
   {
     name: {
@@ -57,7 +56,6 @@ const discountSchema = mongoose.Schema(
   }
 );
 
-// add plugin that converts mongoose to json
 discountSchema.plugin(toJSON);
 
 /**

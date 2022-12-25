@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON } = require('./plugins');
+const { toJSON, paginate } = require('./plugins');
 
 const authorSchema = mongoose.Schema({
   name: {
@@ -25,6 +25,7 @@ const authorSchema = mongoose.Schema({
 
 // add plugin that converts mongoose to json
 authorSchema.plugin(toJSON);
+authorSchema.plugin(paginate);
 
 /**
  * @typedef Author

@@ -3,7 +3,6 @@ const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
 const userValidation = require('../../validations/user.validation');
 const userController = require('../../controllers/user.controller');
-// get the enum roles
 const { roles } = require('../../config/rolesEnum');
 
 const router = express.Router();

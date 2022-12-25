@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON } = require('./plugins');
+const { toJSON, paginate } = require('./plugins');
 
 const genreSchema = mongoose.Schema({
   name: {
@@ -17,8 +17,8 @@ const genreSchema = mongoose.Schema({
   ],
 });
 
-// add plugin that converts mongoose to json
 genreSchema.plugin(toJSON);
+genreSchema.plugin(paginate);
 
 /**
  * @typedef Genre

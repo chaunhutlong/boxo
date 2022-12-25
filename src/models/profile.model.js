@@ -31,7 +31,6 @@ const profileSchema = mongoose.Schema({
   ],
 });
 
-// add plugin that converts mongoose to json
 profileSchema.plugin(toJSON);
 
 /**
