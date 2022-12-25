@@ -1,18 +1,18 @@
 const passport = require('passport');
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
-const { roleRights } = require('../config/roles');
+const { ROLES } = require('../config/roles');
 
-const verifyCallback = (req, resolve, reject, requiredRights) => async (err, user, info) => {
+const verifyCallback = (req, resolve, reject, requiredRoles) => async (err, user, info) => {
   if (err || info || !user) {
-    return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate'));
+    return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Invalid_Credentials'));
   }
   req.user = user;
 
-  if (requiredRights.length) {
-    const userRights = roleRights.get(user.role);
-    const hasRequiredRights = requiredRights.every((requiredRight) => userRights.includes(requiredRight));
-    if (!hasRequiredRights && req.params.userId !== user.id) {
+  if (requiredRoles.length) {
+    const userRoles = ROLES.get(user.role);
+    const hasRequiredRoles = requiredRoles.every((requiredRole) => userRoles.includes(requiredRole));
+    if (!hasRequiredRoles && req.params.userId !== user.id) {
       return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
     }
   }
@@ -20,12 +20,14 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
   resolve();
 };
 
-const auth = (...requiredRights) => async (req, res, next) => {
-  return new Promise((resolve, reject) => {
-    passport.authenticate('jwt', { session: false }, verifyCallback(req, resolve, reject, requiredRights))(req, res, next);
-  })
-    .then(() => next())
-    .catch((err) => next(err));
-};
+const auth =
+  (...requiredRoles) =>
+  async (req, res, next) => {
+    return new Promise((resolve, reject) => {
+      passport.authenticate('jwt', { session: false }, verifyCallback(req, resolve, reject, requiredRoles))(req, res, next);
+    })
+      .then(() => next())
+      .catch((err) => next(err));
+  };
 
 module.exports = auth;

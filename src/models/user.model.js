@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const { toJSON, paginate } = require('./plugins');
+const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
 const { roles } = require('../config/roles');
 
 const userSchema = mongoose.Schema(
@@ -35,10 +36,15 @@ const userSchema = mongoose.Schema(
       },
       private: true, // used by the toJSON plugin
     },
-    role: {
-      type: String,
-      enum: roles,
-      default: 'user',
+    roles: {
+      type: [
+        {
+          type: String,
+          enum: roles,
+        },
+      ],
+      default: ['user'],
+      required: true,
     },
     isEmailVerified: {
       type: Boolean,
@@ -53,6 +59,7 @@ const userSchema = mongoose.Schema(
 // add plugin that converts mongoose to json
 userSchema.plugin(toJSON);
 userSchema.plugin(paginate);
+userSchema.plugin(softDeletePlugin);
 
 /**
  * Check if email is taken
