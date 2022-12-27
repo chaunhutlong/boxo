@@ -5,8 +5,8 @@ const docsRoute = require('./docs.route');
 const config = require('../../config/config');
 const publisherRoute = require('./publisher.route');
 const bookRoute = require('./book.route');
-// const genreRoute = require('./genre.route');
-// const authorRoute = require('./author.route');
+const genreRoute = require('./genre.route');
+const authorRoute = require('./author.route');
 // const orderRoute = require('./order.route');
 // const statisticRoute = require('./statistic.route');
 // const profileRoute = require('./profile.route');
@@ -35,14 +35,14 @@ const defaultRoutes = [
     path: '/books',
     route: bookRoute,
   },
-  // {
-  //   path: '/genres',
-  //   route: genreRoute,
-  // },
-  // {
-  //   path: '/authors',
-  //   route: authorRoute,
-  // },
+  {
+    path: '/genres',
+    route: genreRoute,
+  },
+  {
+    path: '/authors',
+    route: authorRoute,
+  },
   // {
   //   path: '/orders',
   //   route: orderRoute,

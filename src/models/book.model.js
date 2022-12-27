@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const { toJSON, paginate } = require('./plugins');
 const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
+const { toJSON, paginate } = require('./plugins');
 
 const bookSchema = mongoose.Schema(
   {
@@ -44,6 +44,11 @@ const bookSchema = mongoose.Schema(
     },
     publishedDate: {
       type: Date,
+      required: true,
+    },
+    publishedId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Publisher',
       required: true,
     },
     images: [

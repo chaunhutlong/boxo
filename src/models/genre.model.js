@@ -20,6 +20,11 @@ const genreSchema = mongoose.Schema({
 genreSchema.plugin(toJSON);
 genreSchema.plugin(paginate);
 
+genreSchema.statics.isNameTaken = async function (name, excludeGenreId) {
+  const genre = await this.findOne({ name, _id: { $ne: excludeGenreId } });
+  return !!genre;
+};
+
 /**
  * @typedef Genre
  * @property {string} name

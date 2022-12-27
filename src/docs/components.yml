@@ -47,6 +47,100 @@ components:
         message:
           type: string
 
+    Publisher:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        address:
+          type: string
+        books:
+          type: array
+
+    Book:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        availableQuantity:
+          type: number
+        isbn:
+          type: string
+        language:
+          type: string
+        totalPages:
+          type: number
+        originalPrice:
+          type: number
+        price:
+          type: number
+        description:
+          type: string
+        publisherId:
+          type: string
+        publishedDate:
+          type: string
+          format: date-time
+        images:
+          type: array
+        authors:
+          type: array
+        genres:
+          type: array
+        discounts:
+          type: array
+        reviews:
+          type: array
+        isDeleted:
+          type: boolean
+        hasDiscount:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Author:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        biography:
+          type: string
+        birthDate:
+          type: string
+          format: date-time
+        deathDate:
+          type: string
+          format: date-time
+        books:
+          type: array
+
+    Genre:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        books:
+          type: array
+
   responses:
     DuplicateEmail:
       description: Email already taken
