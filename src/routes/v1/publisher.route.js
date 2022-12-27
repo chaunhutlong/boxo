@@ -3,7 +3,7 @@ const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
 const publisherValidation = require('../../validations/publisher.validation');
 const publisherController = require('../../controllers/publisher.controller');
-const { roles } = require('../../config/rolesEnum');
+const { roles } = require('../../config/role.enum');
 
 const router = express.Router();
 

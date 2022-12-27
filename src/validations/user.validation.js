@@ -1,6 +1,6 @@
 const Joi = require('joi');
 const { password, objectId } = require('./custom.validation');
-let { roles } = require('../config/rolesEnum');
+let { roles } = require('../config/role.enum');
 roles = Object.values(roles).filter((role) => role !== 'admin');
 
 const createUser = {

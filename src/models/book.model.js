@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON } = require('./plugins');
+const { toJSON, paginate } = require('./plugins');
 const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
 
 const bookSchema = mongoose.Schema(
@@ -41,11 +41,6 @@ const bookSchema = mongoose.Schema(
     },
     description: {
       type: String,
-    },
-    publisherId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Publisher',
-      required: true,
     },
     publishedDate: {
       type: Date,
@@ -95,9 +90,14 @@ const bookSchema = mongoose.Schema(
   }
 );
 
-// add plugin that converts mongoose to json
 bookSchema.plugin(toJSON);
+bookSchema.plugin(paginate);
 bookSchema.plugin(softDeletePlugin);
+
+bookSchema.statics.isNameTaken = async function (name, excludeBookId) {
+  const book = await this.findOne({ name, _id: { $ne: excludeBookId } });
+  return !!book;
+};
 
 /**
  * @typedef Book

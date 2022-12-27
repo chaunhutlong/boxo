@@ -1,7 +1,7 @@
 const httpStatus = require('http-status');
 const { User } = require('../models');
 const ApiError = require('../utils/ApiError');
-const { roles } = require('../config/rolesEnum');
+const { roles } = require('../config/role.enum');
 
 /**
  * Create a user

@@ -3,7 +3,7 @@ const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const { toJSON, paginate } = require('./plugins');
 const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
-const { roles } = require('../config/rolesEnum');
+const { roles } = require('../config/role.enum');
 
 const userSchema = mongoose.Schema(
   {

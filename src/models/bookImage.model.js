@@ -4,7 +4,7 @@ const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
 
 const bookImageSchema = mongoose.Schema(
   {
-    url: {
+    key: {
       type: String,
       required: true,
     },

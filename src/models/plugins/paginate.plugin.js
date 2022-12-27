@@ -1,4 +1,6 @@
 /* eslint-disable no-param-reassign */
+const { getSignedUrl } = require('../../utils/s3');
+const BUCKET = process.env.AWS_S3_BOOK_IMAGE_BUCKET;
 
 const paginate = (schema) => {
   /**
@@ -53,10 +55,31 @@ const paginate = (schema) => {
     docsPromise = docsPromise.exec();
 
     return Promise.all([countPromise, docsPromise]).then((values) => {
-      const [totalResults, results] = values;
+      let [totalResults, datas] = values;
+      // presign url for each image in results
+      // populate the image
+      // delete the key after presigning
+      // .lean() is used to convert the mongoose document to a plain javascript object
+      datas = datas.map((data) => {
+        const images = data.images.map((image) => {
+          const presignedUrl = getSignedUrl(BUCKET, image.key);
+          const result = {
+            ...image.toObject(),
+            url: presignedUrl,
+          };
+          delete result.key;
+          delete result.bookId;
+          return result;
+        });
+        return {
+          ...data.toObject(),
+          images,
+        };
+      });
+
       const totalPages = Math.ceil(totalResults / limit);
       const result = {
-        results,
+        datas,
         page,
         limit,
         totalPages,

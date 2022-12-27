@@ -2,6 +2,7 @@ module.exports.Token = require('./token.model');
 module.exports.User = require('./user.model');
 module.exports.Publisher = require('./publisher.model');
 module.exports.Book = require('./book.model');
+module.exports.BookImage = require('./bookImage.model');
 module.exports.Genre = require('./genre.model');
 module.exports.Author = require('./author.model');
 module.exports.Order = require('./order.model');
