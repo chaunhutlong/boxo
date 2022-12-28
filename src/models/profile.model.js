@@ -2,10 +2,6 @@ const mongoose = require('mongoose');
 const { toJSON } = require('./plugins');
 
 const profileSchema = mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
   biography: {
     type: String,
   },
@@ -18,7 +14,7 @@ const profileSchema = mongoose.Schema({
       ref: 'Address',
     },
   ],
-  user: {
+  userId: {
     type: mongoose.SchemaTypes.ObjectId,
     ref: 'User',
     required: true,

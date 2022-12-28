@@ -6,3 +6,4 @@ module.exports.publisherService = require('./publisher.service');
 module.exports.bookService = require('./book.service');
 module.exports.genreService = require('./genre.service');
 module.exports.authorService = require('./author.service');
+module.exports.profileService = require('./profile.service');

@@ -7,9 +7,9 @@ const publisherRoute = require('./publisher.route');
 const bookRoute = require('./book.route');
 const genreRoute = require('./genre.route');
 const authorRoute = require('./author.route');
+const profileRoute = require('./profile.route');
 // const orderRoute = require('./order.route');
 // const statisticRoute = require('./statistic.route');
-// const profileRoute = require('./profile.route');
 // const addressRoute = require('./address.route');
 // const discountRoute = require('./discount.route');
 // const reviewRoute = require('./review.route');
@@ -51,10 +51,10 @@ const defaultRoutes = [
   //   path: '/statistics',
   //   route: statisticRoute,
   // },
-  // {
-  //   path: '/profiles',
-  //   route: profileRoute,
-  // },
+  {
+    path: '/profile',
+    route: profileRoute,
+  },
   // {
   //   path: '/addresses',
   //   route: addressRoute,
