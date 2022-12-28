@@ -36,14 +36,12 @@ async function uploadBookImages(bookImages, bookId) {
  */
 const createBook = async (bookBody, bookImage) => {
   try {
-    const bookBodyCreate = bookBody;
-
     if (await Book.isNameTaken(bookBody.name)) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Name already taken');
     }
 
-    bookBodyCreate.genres = JSON.parse(bookBody.genres);
-    bookBodyCreate.authors = JSON.parse(bookBody.authors);
+    bookBody.genres = JSON.parse(bookBody.genres);
+    bookBody.authors = JSON.parse(bookBody.authors);
 
     const book = new Book(bookBody);
 
@@ -124,23 +122,21 @@ const updateBookById = async (bookId, bookBody, bookImage) => {
       throw new ApiError(httpStatus.NOT_FOUND, 'Book not found');
     }
 
-    const updateBody = bookBody;
-
-    if (updateBody.name && (await Book.isNameTaken(updateBody.name, bookId))) {
+    if (bookBody.name && (await Book.isNameTaken(bookBody.name, bookId))) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Name already taken');
     }
 
     // update genres and authors
-    if (updateBody.genres) {
-      updateBody.genres = JSON.parse(updateBody.genres);
+    if (bookBody.genres) {
+      bookBody.genres = JSON.parse(bookBody.genres);
     }
 
-    if (updateBody.authors) {
-      updateBody.authors = JSON.parse(updateBody.authors);
+    if (bookBody.authors) {
+      bookBody.authors = JSON.parse(bookBody.authors);
     }
 
     // update book
-    Object.assign(book, updateBody);
+    Object.assign(book, bookBody);
 
     // upload new images and delete old images
     if (bookImage) {
