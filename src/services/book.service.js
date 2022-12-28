@@ -168,8 +168,9 @@ const deleteBookById = async (bookId) => {
   const book = await Book.findById(bookId).populate('images');
 
   // delete images
-  Object.entries(book.images).forEach(async () => {
-    await deleteBookImages(book.images);
+  Object.keys(book.images).forEach(async (key) => {
+    await deleteFileFromS3(BUCKET, book.images[key].key);
+    await BookImage.deleteOne({ key: book.images[key].key });
   });
 
   await book.remove();
