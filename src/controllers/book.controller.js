@@ -25,7 +25,7 @@ const getBook = catchAsync(async (req, res) => {
 });
 
 const updateBook = catchAsync(async (req, res) => {
-  const book = await bookService.updateBookById(req.params.bookId, req.body);
+  const book = await bookService.updateBookById(req.params.bookId, req.body, req.files);
   res.send(book);
 });
 

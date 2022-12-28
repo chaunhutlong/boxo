@@ -46,7 +46,7 @@ const bookSchema = mongoose.Schema(
       type: Date,
       required: true,
     },
-    publishedId: {
+    publisherId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Publisher',
       required: true,

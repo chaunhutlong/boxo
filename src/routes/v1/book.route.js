@@ -24,7 +24,12 @@ router
 router
   .route('/:bookId')
   .get(validate(bookValidation.getBook), bookController.getBook)
-  .put(auth(roles.ADMIN, roles.MANAGER), validate(bookValidation.updateBook), bookController.updateBook)
+  .put(
+    auth(roles.ADMIN, roles.MANAGER),
+    uploadFileToS3(BUCKET_NAME).array('image'),
+    validate(bookValidation.updateBook),
+    bookController.updateBook
+  )
   .delete(auth(roles.ADMIN, roles.MANAGER), validate(bookValidation.deleteBook), bookController.deleteBook);
 
 module.exports = router;

@@ -9,12 +9,6 @@ const genreSchema = mongoose.Schema({
   description: {
     type: String,
   },
-  books: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Book',
-    },
-  ],
 });
 
 genreSchema.plugin(toJSON);

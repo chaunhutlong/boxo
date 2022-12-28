@@ -15,12 +15,6 @@ const authorSchema = mongoose.Schema({
   deathDate: {
     type: Date,
   },
-  books: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Book',
-    },
-  ],
 });
 
 // add plugin that converts mongoose to json

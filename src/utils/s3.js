@@ -1,9 +1,8 @@
 const AWS = require('aws-sdk');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
-const path = require('path');
-const ApiError = require('../utils/ApiError');
 const httpStatus = require('http-status');
+const ApiError = require('./ApiError');
 const { S3Enum } = require('../config/s3.enum');
 
 const MAX_FILE_SIZE = 1024 * 1024 * 5; // 5MB
@@ -11,7 +10,6 @@ const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
 const SIGNED_URL_EXPIRES_SECONDS = 60 * 60; // 1 hour
 
 function awsS3Connection(bucketName) {
-  //If S3Enum contains bucketName as parameter
   const bucketIndex = S3Enum.indexOf(bucketName);
   let BUCKET;
   let s3;
@@ -53,28 +51,27 @@ function awsS3Connection(bucketName) {
 function uploadFileToS3(BUCKET) {
   const { s3 } = awsS3Connection(BUCKET);
   const storage = multerS3({
-    s3: s3,
+    s3,
     bucket: BUCKET,
     acl: 'public-read',
-    metadata: function (req, file, cb) {
+    metadata: (req, file, cb) => {
       cb(null, { fieldName: file.fieldname });
     },
-    key: function (req, file, cb) {
-      const fileName = `${Date.now().toString()}-${file.originalname}`;
-      cb(null, fileName);
+    key: (req, file, cb) => {
+      cb(null, `${Date.now().toString()}-${file.originalname}`);
     },
   });
 
   const upload = multer({
-    storage: storage,
+    storage,
     limits: {
       fileSize: MAX_FILE_SIZE,
     },
-    fileFilter: function (req, file, cb) {
+    fileFilter: (req, file, cb) => {
       if (ALLOWED_FILE_TYPES.includes(file.mimetype)) {
         cb(null, true);
       } else {
-        cb(new ApiError(httpStatus.BAD_REQUEST, 'File type is not allowed'), false);
+        cb(new ApiError(httpStatus.BAD_REQUEST, 'File type is not supported'), false);
       }
     },
   });
@@ -94,8 +91,20 @@ function getSignedUrl(BUCKET, fileName) {
   return s3.getSignedUrl('getObject', params);
 }
 
+function deleteFileFromS3(BUCKET, fileName) {
+  const { s3 } = awsS3Connection(BUCKET);
+
+  const params = {
+    Bucket: BUCKET,
+    Key: fileName,
+  };
+
+  return s3.deleteObject(params).promise();
+}
+
 module.exports = {
   awsS3Connection,
   uploadFileToS3,
   getSignedUrl,
+  deleteFileFromS3,
 };

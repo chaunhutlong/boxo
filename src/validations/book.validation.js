@@ -13,6 +13,8 @@ const createBook = {
     description: Joi.string().allow(null, ''),
     publisherId: Joi.string().custom(objectId).required(),
     publishedDate: Joi.date().required(),
+    authors: Joi.string().required(),
+    genres: Joi.string().required(),
   }),
 };
 
@@ -49,8 +51,8 @@ const updateBook = {
       publisherId: Joi.string().custom(objectId),
       publishedDate: Joi.date(),
       images: Joi.array().items(Joi.string().custom(objectId)),
-      authors: Joi.array().items(Joi.string().custom(objectId)),
-      genres: Joi.array().items(Joi.string().custom(objectId)),
+      authors: Joi.string(),
+      genres: Joi.string(),
     })
     .min(1),
 };

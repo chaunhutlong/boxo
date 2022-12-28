@@ -128,8 +128,6 @@ components:
         deathDate:
           type: string
           format: date-time
-        books:
-          type: array
 
     Genre:
       type: object
@@ -138,8 +136,6 @@ components:
           type: string
         name:
           type: string
-        books:
-          type: array
 
   responses:
     DuplicateEmail:
