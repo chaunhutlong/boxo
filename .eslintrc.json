@@ -16,6 +16,7 @@
     "jest/expect-expect": "off",
     "security/detect-object-injection": "off",
     "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
-    "eslint-disable no-useless-escape": "off"
+    "eslint-disable no-useless-escape": "off",
+    "no-param-reassign": ["error", { "props": false }]
   }
 }

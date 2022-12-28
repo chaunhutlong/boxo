@@ -3,3 +3,5 @@ module.exports.userController = require('./user.controller');
 module.exports.bookController = require('./book.controller');
 module.exports.genreController = require('./genre.controller');
 module.exports.authorController = require('./author.controller');
+module.exports.profileController = require('./profile.controller');
+module.exports.cartController = require('./cart.controller');

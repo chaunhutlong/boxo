@@ -8,12 +8,12 @@ const bookRoute = require('./book.route');
 const genreRoute = require('./genre.route');
 const authorRoute = require('./author.route');
 const profileRoute = require('./profile.route');
+const cartRoute = require('./cart.route');
 // const orderRoute = require('./order.route');
 // const statisticRoute = require('./statistic.route');
 // const addressRoute = require('./address.route');
 // const discountRoute = require('./discount.route');
 // const reviewRoute = require('./review.route');
-// const cartRoute = require('./cart.route');
 // const checkoutRoute = require('./checkout.route');
 
 const router = express.Router();
@@ -67,10 +67,10 @@ const defaultRoutes = [
   //   path: '/reviews',
   //   route: reviewRoute,
   // },
-  // {
-  //   path: '/carts',
-  //   route: cartRoute,
-  // },
+  {
+    path: '/cart',
+    route: cartRoute,
+  },
   // {
   //   path: '/checkout',
   //   route: checkoutRoute,
