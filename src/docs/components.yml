@@ -12,7 +12,7 @@ components:
           type: string
         role:
           type: string
-          enum: [user, admin]
+          enum: [user, admin, manager]
       example:
         id: 5ebac534954b54139806c112
         email: fake@example.com
@@ -63,8 +63,6 @@ components:
           type: string
         address:
           type: string
-        books:
-          type: array
 
     Book:
       type: object
@@ -93,15 +91,15 @@ components:
           type: string
           format: date-time
         images:
-          type: array
+          type: string
         authors:
-          type: array
+          type: string
         genres:
-          type: array
+          type: string
         discounts:
-          type: array
+          type: string
         reviews:
-          type: array
+          type: string
         isDeleted:
           type: boolean
         hasDiscount:
@@ -137,6 +135,21 @@ components:
         name:
           type: string
 
+    Profile:
+      type: object
+      properties:
+        id:
+          type: string
+        biography:
+          type: string
+        avatar:
+          type: string
+        addresses:
+          type: string
+        userId:
+          type: string
+        discounts:
+          type: string
   responses:
     DuplicateEmail:
       description: Email already taken

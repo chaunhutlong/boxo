@@ -26,44 +26,33 @@ module.exports = router;
 /**
  * @swagger
  * tags:
- *   name: Profiles
+ *   name: Profile
  *   description: Profile management and retrieval
  */
 
 /**
  * @swagger
- * /profiles:
+ * /profile:
  *   post:
- *     summary: Create a profile
- *     description: Admins and Managers can create other profiles.
- *     tags: [Profiles]
+ *     summary: Create or update a profile
+ *     description: Anyone can create or update a profile.
+ *     tags: [Profile]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
- *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
- *             required:
- *               - name
  *             properties:
- *               name:
+ *               biography:
  *                 type: string
- *               address:
+ *               avatar:
  *                 type: string
- *               phone:
- *                 type: string
- *               email:
- *                 type: string
- *               description:
- *                 type: string
+ *                 format: binary
  *             example:
- *               name: Profile 1
- *               address: 1234 Main St
- *               phone: 555-555-5555
- *               email:
- *               description: Profile 1
+ *               biography: I am a software engineer
+ *               avatar: https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50
  *     responses:
  *       "201":
  *         description: Created
@@ -79,65 +68,18 @@ module.exports = router;
  *         $ref: '#/components/responses/Forbidden'
  *
  *   get:
- *     summary: Get all profiles
- *     description: Anyone can retrieve all profiles.
- *     tags: [Profiles]
+ *     summary: Get user's profile
+ *     description: Anyone can retrieve a profile.
+ *     tags: [Profile]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         description: Profile name
- *       - in: query
- *         name: role
- *         schema:
- *           type: string
- *         description: Profile role
- *       - in: query
- *         name: sortBy
- *         schema:
- *           type: string
- *         description: sort by query in the form of field:desc/asc (ex. name:asc)
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           minimum: 1
- *         default: 10
- *         description: Maximum number of profiles
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           minimum: 1
- *           default: 1
- *         description: Page number
  *     responses:
  *       "200":
  *         description: OK
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 results:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Profile'
- *                 page:
- *                   type: integer
- *                   example: 1
- *                 limit:
- *                   type: integer
- *                   example: 10
- *                 totalPages:
- *                   type: integer
- *                   example: 1
- *                 totalResults:
- *                   type: integer
- *                   example: 1
+ *               $ref: '#/components/schemas/Profile'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":
@@ -146,108 +88,50 @@ module.exports = router;
 
 /**
  * @swagger
- * /profiles/{id}:
- *   get:
- *     summary: Get a profile
- *     description: Anyone can retrieve a profile.
- *     tags: [Profiles]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Profile id
- *     responses:
- *       "200":
- *         description: OK
- *         content:
- *           application/json:
- *             schema:
- *                $ref: '#/components/schemas/Profile'
- *       "401":
- *         $ref: '#/components/responses/Unauthorized'
- *       "403":
- *         $ref: '#/components/responses/Forbidden'
- *       "404":
- *         $ref: '#/components/responses/NotFound'
- *
- *   put:
- *     summary: Update a profile
- *     description: Admins and Managers can update other profiles.
- *     tags: [Profiles]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Profile id
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *                name:
+ * /profile/password:
+ *    put:
+ *      summary: Update user's password
+ *      description: Only authenticated users can update their password.
+ *      tags: [Profile]
+ *      security:
+ *        - bearerAuth: []
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              required:
+ *                - oldPassword
+ *                - newPassword
+ *              properties:
+ *                oldPassword:
  *                  type: string
- *                address:
+ *                  format: password
+ *                  description: The old password
+ *                newPassword:
  *                  type: string
- *                phone:
- *                  type: string
- *                email:
- *                  type: string
- *                  format: email
- *                description:
- *                  type: string
- *             example:
- *                name: Profile 1
- *                address: 1234 Main St
- *                phone: 555-555-5555
- *                email: profile@example.com
- *                description: Profile 1
- *     responses:
- *       "200":
- *         description: OK
- *         content:
- *           application/json:
- *             schema:
- *                $ref: '#/components/schemas/Profile'
- *       "400":
- *         $ref: '#/components/responses/BadRequest'
- *       "401":
- *         $ref: '#/components/responses/Unauthorized'
- *       "403":
- *         $ref: '#/components/responses/Forbidden'
- *       "404":
- *         $ref: '#/components/responses/NotFound'
- *
- *   delete:
- *     summary: Delete a profile
- *     description: Admins and Managers can delete other profiles.
- *     tags: [Profiles]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Profile id
- *     responses:
- *       "200":
- *         description: No content
- *       "401":
- *         $ref: '#/components/responses/Unauthorized'
- *       "403":
- *         $ref: '#/components/responses/Forbidden'
- *       "404":
- *         $ref: '#/components/responses/NotFound'
- *
+ *                  format: password
+ *                  description: The new password
+ *              example:
+ *                oldPassword: thisIsMyOldPassword
+ *                newPassword: thisIsMyNewPassword
+ *      responses:
+ *        "200":
+ *            description: OK
+ *            content:
+ *               application/json:
+ *                schema:
+ *                 type: string
+ *                 example: Password updated successfully
+ *        "400":
+ *          $ref: '#/components/responses/BadRequest'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ *        "404":
+ *          $ref: '#/components/responses/NotFound'
+ *        "500":
+ *          $ref: '#/components/responses/InternalServerError'
  */

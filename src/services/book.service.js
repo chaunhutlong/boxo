@@ -64,7 +64,13 @@ const createBook = async (bookBody, bookImage) => {
         await deleteFileFromS3(BUCKET, bookImage[key].key);
       });
     }
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+    let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+
+    if (error.statusCode) {
+      statusCode = error.statusCode;
+    }
+
+    throw new ApiError(statusCode, error.message);
   }
 };
 /**
@@ -155,7 +161,13 @@ const updateBookById = async (bookId, bookBody, bookImage) => {
         await deleteFileFromS3(BUCKET, bookImage[key].key);
       });
     }
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+    let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+
+    if (error.statusCode) {
+      statusCode = error.statusCode;
+    }
+
+    throw new ApiError(statusCode, error.message);
   }
 };
 

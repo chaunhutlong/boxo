@@ -19,7 +19,7 @@ const profileSchema = mongoose.Schema({
     ref: 'User',
     required: true,
   },
-  discount: [
+  discounts: [
     {
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'Discount',

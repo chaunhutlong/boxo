@@ -45,7 +45,13 @@ const addToCart = async (userId, bookBody) => {
 
     return cart;
   } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+    let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+
+    if (error.statusCode) {
+      statusCode = error.statusCode;
+    }
+
+    throw new ApiError(statusCode, error.message);
   }
 };
 
@@ -79,7 +85,13 @@ const getCart = async (userId) => {
 
     return cart;
   } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+    let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+
+    if (error.statusCode) {
+      statusCode = error.statusCode;
+    }
+
+    throw new ApiError(statusCode, error.message);
   }
 };
 
@@ -114,7 +126,13 @@ const updateCart = async (userId, bookBody) => {
       return cart;
     }
   } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+    let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+
+    if (error.statusCode) {
+      statusCode = error.statusCode;
+    }
+
+    throw new ApiError(statusCode, error.message);
   }
 };
 
@@ -141,10 +159,14 @@ const removeItemFromCart = async (userId, bookBody) => {
 
       return cart;
     }
-
-    throw new ApiError(httpStatus.NOT_FOUND, 'Cart not found');
   } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+    let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+
+    if (error.statusCode) {
+      statusCode = error.statusCode;
+    }
+
+    throw new ApiError(statusCode, error.message);
   }
 };
 
@@ -172,7 +194,13 @@ const clearCart = async (userId) => {
 
     return cart;
   } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+    let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+
+    if (error.statusCode) {
+      statusCode = error.statusCode;
+    }
+
+    throw new ApiError(statusCode, error.message);
   }
 };
 
@@ -195,7 +223,13 @@ const addCheckedItem = async (userId, bookBody) => {
 
     return cart;
   } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+    let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+
+    if (error.statusCode) {
+      statusCode = error.statusCode;
+    }
+
+    throw new ApiError(statusCode, error.message);
   }
 };
 
@@ -215,7 +249,13 @@ const addAllCheckedItems = async (userId, bookBody) => {
 
     return cart;
   } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+    let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+
+    if (error.statusCode) {
+      statusCode = error.statusCode;
+    }
+
+    throw new ApiError(statusCode, error.message);
   }
 };
 

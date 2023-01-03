@@ -83,8 +83,6 @@ module.exports = router;
  *     summary: Get all publishers
  *     description: Anyone can retrieve all publishers.
  *     tags: [Publishers]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: name
@@ -152,8 +150,6 @@ module.exports = router;
  *     summary: Get a publisher
  *     description: Anyone can retrieve a publisher.
  *     tags: [Publishers]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id

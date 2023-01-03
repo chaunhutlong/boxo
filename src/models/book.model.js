@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
-const { toJSON, paginate } = require('./plugins');
+const { toJSON, paginateBook } = require('./plugins');
 
 const bookSchema = mongoose.Schema(
   {
@@ -96,7 +96,7 @@ const bookSchema = mongoose.Schema(
 );
 
 bookSchema.plugin(toJSON);
-bookSchema.plugin(paginate);
+bookSchema.plugin(paginateBook);
 bookSchema.plugin(softDeletePlugin);
 
 bookSchema.statics.isNameTaken = async function (name, excludeBookId) {
