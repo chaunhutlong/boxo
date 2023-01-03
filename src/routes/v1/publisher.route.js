@@ -85,16 +85,6 @@ module.exports = router;
  *     tags: [Publishers]
  *     parameters:
  *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         description: Publisher name
- *       - in: query
- *         name: role
- *         schema:
- *           type: string
- *         description: Publisher role
- *       - in: query
  *         name: sortBy
  *         schema:
  *           type: string

@@ -83,16 +83,6 @@ module.exports = router;
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         description: Author name
- *       - in: query
- *         name: role
- *         schema:
- *           type: string
- *         description: Author role
- *       - in: query
  *         name: sortBy
  *         schema:
  *           type: string

@@ -136,19 +136,7 @@ module.exports = router;
  *     summary: Get all books
  *     description: Anyone can retrieve all books.
  *     tags: [Books]
- *     security:
- *       - bearerAuth: []
  *     parameters:
- *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         description: Book name
- *       - in: query
- *         name: role
- *         schema:
- *           type: string
- *         description: Book role
  *       - in: query
  *         name: sortBy
  *         schema:

@@ -70,19 +70,7 @@ module.exports = router;
  *     summary: Get all genres
  *     description: Anyone can retrieve all genres.
  *     tags: [Genres]
- *     security:
- *       - bearerAuth: []
  *     parameters:
- *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         description: Genre name
- *       - in: query
- *         name: role
- *         schema:
- *           type: string
- *         description: Genre role
  *       - in: query
  *         name: sortBy
  *         schema:
@@ -139,8 +127,6 @@ module.exports = router;
  *     summary: Get a genre
  *     description: Anyone can retrieve a genre.
  *     tags: [Genres]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id

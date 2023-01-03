@@ -16,25 +16,25 @@ router.put('/remove', auth(), validate(cartValidation.removeItemFromCart), cartC
 
 router.put('/clear', auth(), cartController.clearCart);
 
-router.put('/add-checked-item', auth(), validate(cartValidation.addCheckedItem), cartController.addCheckedItem);
+router.put('/checked-item', auth(), validate(cartValidation.addCheckedItem), cartController.addCheckedItem);
 
-router.put('/add-all-checked-item', auth(), cartController.addAllCheckedItems);
+router.put('/checked-all-items', auth(), cartController.addAllCheckedItems);
 module.exports = router;
 
 /**
  * @swagger
  * tags:
- *   name: Carts
+ *   name: Cart
  *   description: Cart management and retrieval
  */
 
 /**
  * @swagger
- * /carts:
+ * /cart/add-to-cart:
  *   post:
- *     summary: Create a cart
- *     description: Admins and Managers can create other carts.
- *     tags: [Carts]
+ *     summary: Add to cart
+ *     description: Logged in users can add to cart.
+ *     tags: [Cart]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -44,18 +44,19 @@ module.exports = router;
  *           schema:
  *             type: object
  *             required:
- *               - name
+ *               - bookId
+ *               - quantity
  *             properties:
- *               name:
+ *               bookId:
  *                 type: string
- *               description:
- *                 type: string
+ *               quantity:
+ *                 type: integer
  *             example:
- *               name: Fantasy
- *               description: Fantasy cart
+ *               bookId: 5f1f9b9a0f1cfc3b94f491c5
+ *               quantity: 1
  *     responses:
  *       "201":
- *         description: Created
+ *         description: Added to cart
  *         content:
  *           application/json:
  *             schema:
@@ -67,66 +68,24 @@ module.exports = router;
  *       "403":
  *         $ref: '#/components/responses/Forbidden'
  *
+ */
+
+/**
+ * @swagger
+ * /cart/get:
  *   get:
- *     summary: Get all carts
- *     description: Anyone can retrieve all carts.
- *     tags: [Carts]
+ *     summary: Get cart of logged in user
+ *     description: All logged in users can fetch their cart.
+ *     tags: [Cart]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         description: Cart name
- *       - in: query
- *         name: role
- *         schema:
- *           type: string
- *         description: Cart role
- *       - in: query
- *         name: sortBy
- *         schema:
- *           type: string
- *         description: sort by query in the form of field:desc/asc (ex. name:asc)
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           minimum: 1
- *         default: 10
- *         description: Maximum number of carts
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           minimum: 1
- *           default: 1
- *         description: Page number
  *     responses:
  *       "200":
  *         description: OK
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 results:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Cart'
- *                 page:
- *                   type: integer
- *                   example: 1
- *                 limit:
- *                   type: integer
- *                   example: 10
- *                 totalPages:
- *                   type: integer
- *                   example: 1
- *                 totalResults:
- *                   type: integer
- *                   example: 1
+ *               $ref: '#/components/schemas/Cart'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":
@@ -135,47 +94,13 @@ module.exports = router;
 
 /**
  * @swagger
- * /carts/{id}:
- *   get:
- *     summary: Get a cart
- *     description: Anyone can retrieve a cart.
- *     tags: [Carts]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Cart id
- *     responses:
- *       "200":
- *         description: OK
- *         content:
- *           application/json:
- *             schema:
- *                $ref: '#/components/schemas/Cart'
- *       "401":
- *         $ref: '#/components/responses/Unauthorized'
- *       "403":
- *         $ref: '#/components/responses/Forbidden'
- *       "404":
- *         $ref: '#/components/responses/NotFound'
- *
+ * /cart/update:
  *   put:
- *     summary: Update a cart
- *     description: Admins and Managers can update other carts.
- *     tags: [Carts]
+ *     summary: Update cart
+ *     description: Logged in users can update their cart.
+ *     tags: [Cart]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Cart id
  *     requestBody:
  *       required: true
  *       content:
@@ -183,13 +108,13 @@ module.exports = router;
  *           schema:
  *             type: object
  *             properties:
- *                name:
+ *                bookId:
  *                  type: string
- *                description:
- *                  type: string
+ *                quantity:
+ *                  type: integer
  *             example:
- *                name: Fantasy
- *                description: Fantasy cart
+ *                bookId: 5f1f9b9a0f1cfc3b94f491c5
+ *                quantity: 1
  *     responses:
  *       "200":
  *         description: OK
@@ -205,28 +130,155 @@ module.exports = router;
  *         $ref: '#/components/responses/Forbidden'
  *       "404":
  *         $ref: '#/components/responses/NotFound'
- *
- *   delete:
- *     summary: Delete a cart
- *     description: Admins and Managers can delete other carts.
- *     tags: [Carts]
+ */
+
+/**
+ * @swagger
+ * /cart/remove:
+ *   put:
+ *     summary: Remove item from cart
+ *     description: Logged in users can remove item from their cart.
+ *     tags: [Cart]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Cart id
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *                bookId:
+ *                  type: string
+ *             example:
+ *                bookId: 5f1f9b9a0f1cfc3b94f491c5
  *     responses:
  *       "200":
- *         description: No content
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *                $ref: '#/components/schemas/Cart'
+ *       "400":
+ *         $ref: '#/components/responses/BadRequest'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":
  *         $ref: '#/components/responses/Forbidden'
  *       "404":
  *         $ref: '#/components/responses/NotFound'
- *
+ */
+
+/**
+ * @swagger
+ * /cart/clear:
+ *   put:
+ *     summary: Clear all items from cart
+ *     description: Logged in users can clear all items from their cart.
+ *     tags: [Cart]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *                bookId:
+ *                  type: string
+ *             example:
+ *                bookId: 5f1f9b9a0f1cfc3b94f491c5
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *                $ref: '#/components/schemas/Cart'
+ *       "400":
+ *         $ref: '#/components/responses/BadRequest'
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
+ *       "403":
+ *         $ref: '#/components/responses/Forbidden'
+ *       "404":
+ *         $ref: '#/components/responses/NotFound'
+ */
+
+/**
+ * @swagger
+ * /cart/checked-item:
+ *   put:
+ *     summary: Check item in cart
+ *     description: Logged in users can check item in their cart.
+ *     tags: [Cart]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *                bookId:
+ *                  type: string
+ *                isChecked:
+ *                  type: boolean
+ *             example:
+ *                bookId: 5f1f9b9a0f1cfc3b94f491c5
+ *                isChecked: true
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *                $ref: '#/components/schemas/Cart'
+ *       "400":
+ *         $ref: '#/components/responses/BadRequest'
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
+ *       "403":
+ *         $ref: '#/components/responses/Forbidden'
+ *       "404":
+ *         $ref: '#/components/responses/NotFound'
+ */
+
+/**
+ * @swagger
+ * /cart/checked-all-items:
+ *   put:
+ *     summary: Check all items in cart
+ *     description: Logged in users can check all items in their cart.
+ *     tags: [Cart]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *                isChecked:
+ *                  type: boolean
+ *             example:
+ *                isChecked: true
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *                $ref: '#/components/schemas/Cart'
+ *       "400":
+ *         $ref: '#/components/responses/BadRequest'
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
+ *       "403":
+ *         $ref: '#/components/responses/Forbidden'
+ *       "404":
+ *         $ref: '#/components/responses/NotFound'
  */
