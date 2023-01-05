@@ -79,9 +79,9 @@ components:
           type: string
         totalPages:
           type: number
-        originalPrice:
-          type: number
         price:
+          type: number
+        priceDiscount:
           type: number
         description:
           type: string

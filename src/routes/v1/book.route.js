@@ -62,8 +62,8 @@ module.exports = router;
  *               - isbn
  *               - language
  *               - totalPages
- *               - originalPrice
  *               - price
+ *               - priceDiscount
  *               - publishedDate
  *               - publisherId
  *               - images
@@ -80,9 +80,9 @@ module.exports = router;
  *                 type: string
  *               totalPages:
  *                 type: integer
- *               originalPrice:
- *                 type: integer
  *               price:
+ *                 type: integer
+ *               priceDiscount:
  *                 type: integer
  *               description:
  *                 type: string
@@ -110,8 +110,8 @@ module.exports = router;
  *               isbn: 1234567890123
  *               language: English
  *               totalPages: 100
- *               originalPrice: 10000
  *               price: 10000
+ *               priceDiscount: 10000
  *               description: Book description
  *               publishedDate: 2021-01-01
  *               publisherId: 5f0baba858c7ae3b946cde39
@@ -244,9 +244,9 @@ module.exports = router;
  *                 type: string
  *               totalPages:
  *                 type: integer
- *               originalPrice:
- *                 type: integer
  *               price:
+ *                 type: integer
+ *               priceDiscount:
  *                 type: integer
  *               description:
  *                 type: string
@@ -274,8 +274,8 @@ module.exports = router;
  *               isbn: 1234567890123
  *               language: English
  *               totalPages: 100
- *               originalPrice: 10000
  *               price: 10000
+ *               priceDiscount: 10000
  *               description: Book description
  *               publishedDate: 2021-01-01
  *               publisherId: 5f0baba858c7ae3b946cde39

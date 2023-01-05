@@ -29,15 +29,18 @@ const bookSchema = mongoose.Schema(
       required: true,
       min: 0,
     },
-    originalPrice: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
     price: {
       type: Number,
       required: true,
       min: 0,
+    },
+    priceDiscount: {
+      type: Number,
+      validate: {
+        validator: (v) => v <= this.price,
+
+        message: (props) => `${props.value} is not less than or equal to original price!`,
+      },
     },
     description: {
       type: String,
@@ -50,6 +53,9 @@ const bookSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Publisher',
       required: true,
+    },
+    imageCover: {
+      type: mongoose.Schema.Types.ObjectId,
     },
     images: [
       {
@@ -112,6 +118,7 @@ bookSchema.statics.isNameTaken = async function (name, excludeBookId) {
  * @property {string} language
  * @property {number} totalPages
  * @property {number} price
+ * @property {number} priceDiscount
  * @property {string} description
  * @property {Date} publishedDate
  * @property {boolean} isDeleted

@@ -8,3 +8,4 @@ module.exports.genreService = require('./genre.service');
 module.exports.authorService = require('./author.service');
 module.exports.profileService = require('./profile.service');
 module.exports.cartService = require('./cart.service');
+module.exports.addressService = require('./address.service');

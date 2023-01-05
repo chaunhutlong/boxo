@@ -6,31 +6,26 @@ const addressSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  phone: {
+    type: String,
+    required: true,
+  },
+  distance: {
+    type: Number,
+  },
   description: {
     type: String,
   },
-  province: {
-    type: mongoose.SchemaTypes.ObjectId,
-    ref: 'Province',
-    required: true,
-  },
-  city: {
+  cityId: {
     type: mongoose.SchemaTypes.ObjectId,
     ref: 'City',
-    required: true,
-  },
-  street: {
-    type: String,
-  },
-  phone: {
-    type: String,
     required: true,
   },
   isDefault: {
     type: Boolean,
     default: false,
   },
-  user: {
+  userId: {
     type: mongoose.SchemaTypes.ObjectId,
     ref: 'User',
     required: true,
