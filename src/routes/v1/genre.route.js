@@ -15,8 +15,8 @@ router
 router
   .route('/:genreId')
   .get(validate(genreValidation.getGenre), genreController.getGenre)
-  .put(auth(roles.ADMIN, roles.MANAGER), validate(genreValidation.updateGenre), genreController.updateGenre)
-  .delete(auth(roles.ADMIN, roles.MANAGER), validate(genreValidation.deleteGenre), genreController.deleteGenre);
+  .put(auth(), validate(genreValidation.updateGenre), genreController.updateGenre)
+  .delete(auth(), validate(genreValidation.deleteGenre), genreController.deleteGenre);
 
 module.exports = router;
 
