@@ -14,3 +14,5 @@ module.exports.Review = require('./review.model');
 module.exports.Cart = require('./cart.model');
 module.exports.City = require('./city.model');
 module.exports.Province = require('./province.model');
+module.exports.Shipping = require('./shipping.model');
+module.exports.Payment = require('./payment.model');

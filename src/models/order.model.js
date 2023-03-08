@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const { toJSON, paginate } = require('./plugins');
 const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
+const { toJSON, paginate } = require('./plugins');
 
 const orderSchema = mongoose.Schema(
   {
@@ -20,10 +20,6 @@ const orderSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    value: {
-      type: Number,
-      required: true,
-    },
     shipping: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'Shipping',
@@ -31,6 +27,14 @@ const orderSchema = mongoose.Schema(
     payment: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'Payment',
+    },
+    discount: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'Discount',
+    },
+    totalPayment: {
+      type: Number,
+      required: true,
     },
     isDeleted: {
       type: Boolean,
@@ -51,7 +55,6 @@ orderSchema.plugin(softDeletePlugin);
  * @property {ObjectId} books
  * @property {ObjectId} user
  * @property {string} status
- * @property {number} value
  * @property {ObjectId} shipping
  * @property {ObjectId} payment
  * @property {Date} createdAt

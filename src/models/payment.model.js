@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 const { toJSON } = require('./plugins');
-const { paymentTypes } = require('../config/payment');
+const { paymentTypes } = require('../config/payment.enum');
 
 const paymentSchema = mongoose.Schema(
   {
-    status: {
-      type: String,
-      required: true,
+    isPaid: {
+      type: Boolean,
+      default: false,
     },
     value: {
       type: Number,
@@ -25,9 +25,6 @@ const paymentSchema = mongoose.Schema(
     discount: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'Discount',
-    },
-    description: {
-      type: String,
     },
   },
   {

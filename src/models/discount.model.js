@@ -19,12 +19,12 @@ const discountSchema = mongoose.Schema(
         ref: 'Book',
       },
     ],
-    discountType: {
+    type: {
       type: String,
       required: true,
-      enum: ['percent', 'amount'],
+      enum: ['percentage', 'fixed'],
     },
-    discountValue: {
+    value: {
       type: Number,
       required: true,
       min: 0,
@@ -42,6 +42,16 @@ const discountSchema = mongoose.Schema(
       type: Date,
       required: true,
     },
+    maxValue: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    minRequiredValue: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
     isActive: {
       type: Boolean,
       default: false,
@@ -57,7 +67,18 @@ const discountSchema = mongoose.Schema(
 );
 
 discountSchema.plugin(toJSON);
+discountSchema.statics.getAvailableDiscount = async function (code) {
+  const discount = await this.findOne({ code, isActive: true, isDeleted: false });
 
+  // check expired date
+  if (discount && (discount.endDate < new Date() || discount.startDate > new Date())) {
+    discount.isActive = false;
+    await discount.save();
+    return false;
+  }
+
+  return discount;
+};
 /**
  * @typedef Discount
  * @property {string} name
@@ -70,6 +91,8 @@ discountSchema.plugin(toJSON);
  * @property {Date} endDate
  * @property {boolean} isActive
  * @property {boolean} isDeleted
+ * @property {number} maxValue
+ * @property {number} minRequiredValue
  * @property {Date} createdAt
  * @property {Date} updatedAt
  * @property {Date} deletedAt

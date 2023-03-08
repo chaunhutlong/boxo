@@ -52,7 +52,7 @@ const queryAddresss = async (filter, options) => {
  * @returns {Promise<Address>}
  */
 const getAddressById = async (id) => {
-  const address = await Address.findById(id);
+  const address = await Address.findById(id).populate('cityId');
   if (!address) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Address not found');
   }
