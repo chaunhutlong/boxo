@@ -10,6 +10,7 @@ const authorRoute = require('./author.route');
 const profileRoute = require('./profile.route');
 const cartRoute = require('./cart.route');
 const addressRoute = require('./address.route');
+const provinceRoute = require('./province.route');
 // const orderRoute = require('./order.route');
 // const statisticRoute = require('./statistic.route');
 // const discountRoute = require('./discount.route');
@@ -70,6 +71,10 @@ const defaultRoutes = [
   {
     path: '/cart',
     route: cartRoute,
+  },
+  {
+    path: '/provinces',
+    route: provinceRoute,
   },
   // {
   //   path: '/checkout',

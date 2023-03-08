@@ -9,7 +9,7 @@ const router = express.Router();
 router
   .route('/')
   .post(auth(), validate(addressValidation.createAddress), addressController.createAddress)
-  .get(auth(), validate(addressValidation.getAddresss), addressController.getAddresss);
+  .get(auth(), validate(addressValidation.getAddresses), addressController.getAddresss);
 
 router
   .route('/:addressId')

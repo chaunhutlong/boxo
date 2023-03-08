@@ -150,6 +150,29 @@ components:
           type: string
         discounts:
           type: string
+
+    Province:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+
+    City:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        provinceId:
+          type: string
+
   responses:
     DuplicateEmail:
       description: Email already taken

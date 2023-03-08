@@ -16,9 +16,7 @@ const createAddress = async (userId, addressBody) => {
       await address.updateMany({ userId }, { isDefault: false });
     }
 
-    const distance = await City.getDistance(address.cityId);
-
-    address.distance = distance;
+    address.distance = await City.getDistance(address.cityId);
 
     await address.save();
 

@@ -9,13 +9,6 @@ const citySchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  description: {
-    type: String,
-  },
-  provinceId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Province',
-  },
   latitude: {
     type: Number,
     required: true,
@@ -23,6 +16,10 @@ const citySchema = mongoose.Schema({
   longitude: {
     type: Number,
     required: true,
+  },
+  provinceId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Province',
   },
 });
 

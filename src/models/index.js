@@ -12,3 +12,5 @@ module.exports.Address = require('./address.model');
 module.exports.Discount = require('./discount.model');
 module.exports.Review = require('./review.model');
 module.exports.Cart = require('./cart.model');
+module.exports.City = require('./city.model');
+module.exports.Province = require('./province.model');
