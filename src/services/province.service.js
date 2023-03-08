@@ -5,16 +5,18 @@ const { City, Province } = require('../models');
  * @returns {Promise<Province>}
  */
 const getProvinces = async () => {
-  await Province.find();
+  const provinces = await Province.find();
+  return provinces;
 };
 
 /**
  * Get cities by provinceId
  * @param {ObjectId} provinceId
- * @returns {Promise<Cities>}
+ * @returns {Promise<City>}
  */
 const getCitiesByProvinceId = async (provinceId) => {
-  await City.find({ provinceId });
+  const cities = await City.find({ provinceId });
+  return cities;
 };
 
 module.exports = {

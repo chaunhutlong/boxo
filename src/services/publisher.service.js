@@ -61,13 +61,11 @@ const updatePublisherById = async (publisherId, updateBody) => {
 /**
  * Delete publisher by id
  * @param {ObjectId} publisherId
- * @returns {Promise<Publisher>}
  */
 const deletePublisherById = async (publisherId) => {
   const publisher = await getPublisherById(publisherId);
 
   await publisher.remove();
-  return publisher;
 };
 
 module.exports = {

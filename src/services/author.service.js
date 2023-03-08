@@ -67,7 +67,6 @@ const deleteAuthorById = async (authorId) => {
   const author = await getAuthorById(authorId);
 
   await author.remove();
-  return author;
 };
 
 module.exports = {

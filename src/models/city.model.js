@@ -1,3 +1,4 @@
+const fetch = require('node-fetch');
 const mongoose = require('mongoose');
 const { toJSON } = require('./plugins');
 
@@ -9,11 +10,11 @@ const citySchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  latitude: {
+  lat: {
     type: Number,
     required: true,
   },
-  longitude: {
+  lng: {
     type: Number,
     required: true,
   },
@@ -26,31 +27,29 @@ const citySchema = mongoose.Schema({
 // add plugin that converts mongoose to json
 citySchema.plugin(toJSON);
 
-citySchema.statics.getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
-  const R = 6371; // Radius of the earth in km
-  const dLat = this.deg2rad(lat2 - lat1); // deg2rad below
-  const dLon = this.deg2rad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const d = R * c; // Distance in km
-  return d;
+citySchema.statics.deg2rad = function (deg) {
+  return deg * (Math.PI / 180);
 };
 
-citySchema.statics.getDistance = async (cityId) => {
+citySchema.statics.getDistanceFromLatLonInKm = async function (lat1, lon1, lat2, lon2) {
+  const url = `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  return data.routes[0].distance / 1000;
+};
+
+citySchema.statics.getDistance = async function (cityId) {
   const city = await this.findById(cityId);
-  const distance = await this.getDistanceFromLatLonInKm(latDefault, lngDefault, city.latitude, city.longitude);
+  const distance = await this.getDistanceFromLatLonInKm(latDefault, lngDefault, city.lat, city.lng);
   return distance;
 };
 
 /**
  * @typedef City
  * @property {string} name
- * @property {string} description
- * @property {ObjectId} province
- * @property {number} latitude
- * @property {number} longitude
+ * @property {number} lat
+ * @property {number} lng
+ * @property {ObjectId} provinceId
  */
 
 const City = mongoose.model('City', citySchema);

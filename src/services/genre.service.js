@@ -64,13 +64,11 @@ const updateGenreById = async (genreId, updateBody) => {
 /**
  * Delete genre by id
  * @param {ObjectId} genreId
- * @returns {Promise<Genre>}
  */
 const deleteGenreById = async (genreId) => {
   const genre = await getGenreById(genreId);
 
   await genre.remove();
-  return genre;
 };
 
 module.exports = {

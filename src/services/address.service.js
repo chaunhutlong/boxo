@@ -73,8 +73,7 @@ const updateAddressById = async (addressId, userId, addressBody) => {
   }
 
   if (addressBody.cityId) {
-    const distance = await City.getDistance(addressBody.cityId);
-    addressBody.distance = distance;
+    address.distance = await City.getDistance(addressBody.cityId);
   }
 
   Object.assign(address, addressBody);
@@ -86,13 +85,11 @@ const updateAddressById = async (addressId, userId, addressBody) => {
 /**
  * Delete address by id
  * @param {ObjectId} addressId
- * @returns {Promise<Address>}
  */
 const deleteAddressById = async (addressId) => {
   const address = await getAddressById(addressId);
 
   await address.remove();
-  return address;
 };
 
 module.exports = {
