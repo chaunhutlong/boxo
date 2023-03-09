@@ -106,6 +106,11 @@ const paymentOrder = async (userId, paymentBody) => {
     }
   }
 
+  const shippingCost = await Shipping.calculateShippingValue(address.distance);
+
+  // add shipping cost to total payment
+  totalPayment += shippingCost;
+
   const order = await Order.create({
     user: userId,
     totalPayment,
@@ -114,16 +119,12 @@ const paymentOrder = async (userId, paymentBody) => {
     status: orderStatuses.PENDING,
   });
 
-  const shippingCost = await Shipping.calculateShippingValue(address.distance);
-
-  // add shipping cost to total payment
-  totalPayment += shippingCost;
-
   const shipping = await Shipping.create({
     address: address._id,
     value: shippingCost,
     trackingNumber: await Shipping.generateTrackingNumber(8),
     status: shippingStatuses.PENDING,
+    order: order._id,
   });
 
   const payment = await Payment.create({
@@ -137,8 +138,9 @@ const paymentOrder = async (userId, paymentBody) => {
   order.shipping = shipping._id;
   order.payment = payment._id;
 
-  // clear cart
-  await Cart.deleteMany({ userId, 'books.isChecked': true });
+  // clear cart to empty
+  cartBooks[0].books = [];
+  await cartBooks[0].save();
 
   await order.save();
   return order;

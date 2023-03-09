@@ -33,7 +33,6 @@ const getOrders = {
 
 const paymentOrder = {
   body: Joi.object().keys({
-    order: Joi.string().custom(objectId),
     type: Joi.string().valid(...paymentTypes),
     discountCode: Joi.string().allow(''),
   }),

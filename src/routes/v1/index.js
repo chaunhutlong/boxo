@@ -15,7 +15,6 @@ const orderRoute = require('./order.route');
 // const statisticRoute = require('./statistic.route');
 // const discountRoute = require('./discount.route');
 // const reviewRoute = require('./review.route');
-// const checkoutRoute = require('./checkout.route');
 
 const router = express.Router();
 
