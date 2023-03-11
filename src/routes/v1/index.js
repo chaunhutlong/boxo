@@ -13,8 +13,6 @@ const addressRoute = require('./address.route');
 const provinceRoute = require('./province.route');
 const orderRoute = require('./order.route');
 const discountRoute = require('./discount.route');
-// const statisticRoute = require('./statistic.route');
-// const reviewRoute = require('./review.route');
 
 const router = express.Router();
 
