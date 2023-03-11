@@ -12,8 +12,8 @@ const cartRoute = require('./cart.route');
 const addressRoute = require('./address.route');
 const provinceRoute = require('./province.route');
 const orderRoute = require('./order.route');
+const discountRoute = require('./discount.route');
 // const statisticRoute = require('./statistic.route');
-// const discountRoute = require('./discount.route');
 // const reviewRoute = require('./review.route');
 
 const router = express.Router();
@@ -59,10 +59,10 @@ const defaultRoutes = [
     path: '/addresses',
     route: addressRoute,
   },
-  // {
-  //   path: '/discounts',
-  //   route: discountRoute,
-  // },
+  {
+    path: '/discounts',
+    route: discountRoute,
+  },
   // {
   //   path: '/reviews',
   //   route: reviewRoute,
@@ -75,10 +75,6 @@ const defaultRoutes = [
     path: '/provinces',
     route: provinceRoute,
   },
-  // {
-  //   path: '/checkout',
-  //   route: checkoutRoute,
-  // },
 ];
 
 const devRoutes = [

@@ -56,6 +56,10 @@ const discountSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isPublic: {
+      type: Boolean,
+      default: false,
+    },
     isDeleted: {
       type: Boolean,
       default: false,
