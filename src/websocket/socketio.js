@@ -34,16 +34,33 @@ const adapter = async (io, mongoUrl) => {
 
 const socketio = async (server, mongoUrl) => {
   return new Promise((resolve) => {
-    adapter(new Server(server), mongoUrl).then((io) => {
-      io.use(auth).on('connection', (socket) => {
-        socket.on('disconnect', () => {
-          console.log('user disconnected');
-        });
-      });
+    const serverSocket = new Server(server, {
+      cors: {
+        origin: '*',
+      },
+    });
 
-      resolve({
-        message: 'Socket.io is running',
-        io,
+    adapter(serverSocket, mongoUrl).then((io) => {
+      const wrap = (middleware) => async (socket, next) => {
+        await middleware(socket.request, {}, next);
+      };
+
+      io.use(wrap(auth()));
+
+      io.on('connection', async (socket) => {
+        const { id: userId } = socket.request.user;
+
+        console.log(`Socket ${socket.id} connected for user ${userId}`);
+
+        socket.on('disconnect', async () => {
+          console.log(`User ${userId} with socket ${socket.id} is disconnected`);
+        });
+
+        socket.on('connect_error', (err) => {
+          console.error(err);
+        });
+
+        resolve(io);
       });
     });
   });
