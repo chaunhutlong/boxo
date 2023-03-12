@@ -20,7 +20,7 @@ async function startAgenda(io) {
    *  every sunday at 00:00 : cronTime.everySundayAt(0, 0)
    * */
 
-  await agenda.every(cronTime.everyMinute(), 'findWeeklyTopOrder');
+  await agenda.every(cronTime.everySundayAt(0, 0), 'findWeeklyTopOrder');
 }
 
 mongoose.connect(config.mongoose.url, config.mongoose.options).then(async () => {
