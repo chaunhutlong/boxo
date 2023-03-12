@@ -5,12 +5,11 @@ const config = require('../config/config');
 const logger = require('../config/logger');
 const { allDefinition } = require('./definitions/index');
 
-const mongoConnectionString = config.mongoose.url;
-const processEvery = '60 seconds';
+const { processEvery } = config.agenda;
 
 const agenda = new Agenda({
   db: {
-    address: mongoConnectionString,
+    address: config.mongoose.url,
     options: { useNewUrlParser: true },
     collection: 'jobs',
   },

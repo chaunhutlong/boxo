@@ -61,4 +61,7 @@ module.exports = {
     },
     from: envVars.EMAIL_FROM,
   },
+  agenda: {
+    processEvery: '60 seconds',
+  },
 };

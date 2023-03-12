@@ -16,3 +16,4 @@ module.exports.City = require('./city.model');
 module.exports.Province = require('./province.model');
 module.exports.Shipping = require('./shipping.model');
 module.exports.Payment = require('./payment.model');
+module.exports.TopOrder = require('./topOrder.model');

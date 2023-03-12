@@ -1,29 +1,63 @@
+/* eslint-disable no-console */
+
 const { DateTime } = require('luxon');
-const { Order } = require('../../models');
+const { Order, TopOrder } = require('../../models');
 
 const findWeeklyTopOrder = async (agenda, logger) => {
   try {
     agenda.define('findWeeklyTopOrder', { priority: 'high', concurrency: 20 }, async function (job, done) {
-      try {
-        const { io } = agenda;
-        const { weekStart, weekEnd } = DateTime.local().startOf('week').toObject();
+      logger.info('findWeeklyTopOrder job started');
+      const startOfWeek = DateTime.now().startOf('week').toJSDate();
+      const endOfWeek = DateTime.now().endOf('week').toJSDate();
 
-        const orders = await Order.find({ createdAt: { $gte: weekStart, $lte: weekEnd } })
-          .populate('user')
-          .populate('product')
-          .sort({ quantity: -1 })
-          .limit(10);
+      // find the top order of this week
+      Order.aggregate(
+        [
+          {
+            $match: {
+              createdAt: {
+                $gte: startOfWeek,
+                $lte: endOfWeek,
+              },
+            },
+          },
+          {
+            $group: {
+              _id: '$books',
+              count: { $sum: 1 },
+            },
+          },
+          {
+            $sort: { count: -1 },
+          },
+          {
+            $limit: 1,
+          },
+        ],
+        (err, result) => {
+          if (err) {
+            console.error(err);
+          } else {
+            const topOrder = new TopOrder({
+              book: result[0]._id,
+              count: result[0].count,
+              weekStartDate: startOfWeek,
+              weekEndDate: endOfWeek,
+            });
 
-        io.emit('weeklyTopOrder', orders);
-        logger.info('Weekly top order sent');
-        done();
-      } catch (error) {
-        logger.error(error);
-        done(error);
-      }
+            topOrder.save((error) => {
+              if (error) {
+                console.error(error);
+              }
+            });
+          }
+        }
+      );
+      logger.info('findWeeklyTopOrder job finished');
+      done();
     });
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
   }
 };
 
