@@ -12,7 +12,7 @@ const createBook = catchAsync(async (req, res) => {
 });
 
 const getBooks = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['name', 'role']);
+  const filter = pick(req.query, ['genres']);
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
   const result = await bookService.queryBooks(filter, options);
   res.send(result);

@@ -20,8 +20,7 @@ const createBook = {
 
 const getBooks = {
   query: Joi.object().keys({
-    name: Joi.string(),
-    role: Joi.string(),
+    genres: Joi.string().custom(objectId),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
