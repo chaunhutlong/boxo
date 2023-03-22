@@ -21,6 +21,11 @@ const authorSchema = mongoose.Schema({
 authorSchema.plugin(toJSON);
 authorSchema.plugin(paginate);
 
+authorSchema.statics.isNameTaken = async function (name, excludeAuthorId) {
+  const author = await this.findOne({ name, _id: { $ne: excludeAuthorId } });
+  return !!author;
+};
+
 /**
  * @typedef Author
  * @property {string} name
