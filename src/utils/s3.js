@@ -5,7 +5,7 @@ const httpStatus = require('http-status');
 const ApiError = require('./ApiError');
 const { S3Enum } = require('../config/s3.enum');
 
-const MAX_FILE_SIZE = 1024 * 1024 * 5; // 5MB
+const MAX_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
 const SIGNED_URL_EXPIRES_SECONDS = 60 * 60; // 1 hour
 
@@ -79,24 +79,52 @@ function uploadFileToS3(BUCKET) {
   return upload;
 }
 
-function getSignedUrl(BUCKET, fileName) {
+async function uploadBase64ToS3(bucketName, base64String, fileName) {
+  const { s3 } = awsS3Connection(bucketName);
+  const decodedImage = Buffer.from(base64String.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+
+  const params = {
+    Bucket: bucketName,
+    Key: `${Date.now().toString()}-${fileName}`,
+    Body: decodedImage,
+    ACL: 'public-read',
+    ContentEncoding: 'base64',
+    ContentType: 'image/jpeg',
+  };
+
+  if (decodedImage.length > MAX_FILE_SIZE) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'File size is too large');
+  }
+
+  return new Promise((resolve, reject) => {
+    s3.upload(params, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(data);
+      }
+    });
+  });
+}
+
+function getSignedUrl(BUCKET, key) {
   const { s3 } = awsS3Connection(BUCKET);
 
   const params = {
     Bucket: BUCKET,
-    Key: fileName,
+    Key: key,
     Expires: SIGNED_URL_EXPIRES_SECONDS,
   };
 
   return s3.getSignedUrl('getObject', params);
 }
 
-function deleteFileFromS3(BUCKET, fileName) {
+function deleteFileFromS3(BUCKET, key) {
   const { s3 } = awsS3Connection(BUCKET);
 
   const params = {
     Bucket: BUCKET,
-    Key: fileName,
+    Key: key,
   };
 
   return s3.deleteObject(params).promise();
@@ -107,4 +135,5 @@ module.exports = {
   uploadFileToS3,
   getSignedUrl,
   deleteFileFromS3,
+  uploadBase64ToS3,
 };

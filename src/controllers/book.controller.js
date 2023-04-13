@@ -2,12 +2,10 @@ const httpStatus = require('http-status');
 const pick = require('../utils/pick');
 const catchAsync = require('../utils/catchAsync');
 const { bookService } = require('../services');
-const ApiError = require('../utils/ApiError');
 
 const createBook = catchAsync(async (req, res) => {
-  if (!req.files) throw new ApiError(httpStatus.BAD_REQUEST, 'Image is required');
-
-  const book = await bookService.createBook(req.body, req.files);
+  const { images, ...bookBody } = req.body;
+  const book = await bookService.createBook(bookBody, images);
   res.status(httpStatus.CREATED).send(book);
 });
 
@@ -25,7 +23,8 @@ const getBook = catchAsync(async (req, res) => {
 });
 
 const updateBook = catchAsync(async (req, res) => {
-  const book = await bookService.updateBookById(req.params.bookId, req.body, req.files);
+  const { images, ...bookBody } = req.body;
+  const book = await bookService.updateBookById(req.params.bookId, bookBody, images);
   res.send(book);
 });
 
