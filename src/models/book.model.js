@@ -39,7 +39,7 @@ const bookSchema = mongoose.Schema(
       validate: {
         validator: (v) => v <= this.price,
 
-        message: (props) => `${props.value} is not less than or equal to original price!`,
+        message: (props) => `${props.value} is not less than or equal to ${this.price}`,
       },
     },
     description: {
