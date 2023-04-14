@@ -20,6 +20,10 @@ async function uploadBookImages(bookImageArray, bookId) {
     const images = [];
     const promises = [];
 
+    if (!bookImageArray) {
+      return images;
+    }
+
     for (let i = 0; i < bookImageArray.length; i += 1) {
       const base64String = bookImageArray[i];
       const fileName = `book_image_${bookId}_${i}.jpg`;
