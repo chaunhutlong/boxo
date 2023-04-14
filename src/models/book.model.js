@@ -36,11 +36,7 @@ const bookSchema = mongoose.Schema(
     },
     priceDiscount: {
       type: Number,
-      validate: {
-        validator: (v) => v <= this.price,
-
-        message: (props) => `${props.value} is not less than or equal to ${this.price}`,
-      },
+      min: 0,
     },
     description: {
       type: String,

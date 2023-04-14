@@ -15,12 +15,9 @@ async function deleteBookImages(bookImages) {
   }
 }
 
-async function uploadBookImages(bookImageBase64, bookId) {
+async function uploadBookImages(bookImageArray, bookId) {
   try {
     const images = [];
-    // if bookImageBase64 is not array, convert it to array
-    const bookImageArray = Array.isArray(bookImageBase64) ? bookImageBase64 : [bookImageBase64];
-
     const promises = [];
 
     for (let i = 0; i < bookImageArray.length; i += 1) {
@@ -62,6 +59,12 @@ const createBook = async (bookBody, bookImageBase64) => {
       bookImages = await uploadBookImages(bookImageBase64, book._id);
       book.images = bookImages.map((image) => image._id);
       await Promise.all([book.save(), BookImage.insertMany(bookImages)]);
+
+      Promise.all([book.save(), BookImage.insertMany(bookImages)]).catch((err) => {
+        deleteBookImages(bookImages).finally(() => {
+          throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `Error creating book: ${err}`);
+        });
+      });
     } else {
       await book.save();
     }
@@ -139,13 +142,20 @@ const updateBookById = async (bookId, bookBody, bookImageBase64) => {
     Object.assign(book, bookBody);
 
     if (bookImageBase64) {
+      const bookImageArray = Array.isArray(bookImageBase64) ? bookImageBase64 : [bookImageBase64];
+
+      // if bookImageArray has link, that not do anything
+      if (bookImageArray[0].startsWith('http')) {
+        await book.save();
+        return book;
+      }
+
+      // if bookImageBase64 is base64 string, delete old images and upload new images
       await deleteBookImages(book.images);
 
-      bookImage = await uploadBookImages(bookImageBase64, book._id);
+      bookImage = await uploadBookImages(bookImageArray, book._id);
       book.images = bookImage.map((image) => image._id);
-      await Promise.all([book.save({ validateBeforeSave: false }), BookImage.insertMany(bookImage)]);
-    } else {
-      await book.save({ validateBeforeSave: false });
+      await Promise.all([book.save(), BookImage.insertMany(bookImage)]);
     }
 
     return book;
