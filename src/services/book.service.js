@@ -6,6 +6,7 @@ const { getSignedUrl, deleteFileFromS3, uploadBase64ToS3 } = require('../utils/s
 const BUCKET = process.env.AWS_S3_BOOK_IMAGE_BUCKET;
 
 async function deleteBookImages(bookImages) {
+  if (!bookImages) return;
   const keys = Object.keys(bookImages).map((key) => bookImages[key].key);
   try {
     await deleteFileFromS3(BUCKET, keys);
@@ -19,10 +20,6 @@ async function uploadBookImages(bookImageArray, bookId) {
   try {
     const images = [];
     const promises = [];
-
-    if (!bookImageArray) {
-      return images;
-    }
 
     for (let i = 0; i < bookImageArray.length; i += 1) {
       const base64String = bookImageArray[i];
