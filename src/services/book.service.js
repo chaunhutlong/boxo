@@ -7,7 +7,7 @@ const BUCKET = process.env.AWS_S3_BOOK_IMAGE_BUCKET;
 
 async function deleteBookImages(bookImages) {
   if (!bookImages) return;
-  const keys = Object.keys(bookImages).map((key) => bookImages[key].key);
+  const keys = bookImages.map((image) => image.key);
   try {
     await deleteFileFromS3(BUCKET, keys);
     await BookImage.deleteMany({ key: { $in: keys } });
