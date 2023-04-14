@@ -68,10 +68,6 @@ const createBook = async (bookBody, bookImageBase64) => {
 
     return book;
   } catch (error) {
-    if (bookImages) {
-      await deleteBookImages(bookImages);
-    }
-
     let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
     if (error.statusCode) {
       statusCode = error.statusCode;
@@ -154,11 +150,6 @@ const updateBookById = async (bookId, bookBody, bookImageBase64) => {
 
     return book;
   } catch (error) {
-    if (bookImage) {
-      Object.keys(bookImage).forEach(async (key) => {
-        await deleteFileFromS3(BUCKET, bookImage[key].key);
-      });
-    }
     let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
 
     if (error.statusCode) {
