@@ -9,7 +9,7 @@ async function deleteBookImages(bookImages) {
   if (!bookImages) return;
   const keys = bookImages.map((image) => image.key);
   try {
-    await deleteFileFromS3(BUCKET, keys);
+    await Promise.all(keys.map((key) => deleteFileFromS3(BUCKET, key)));
     await BookImage.deleteMany({ key: { $in: keys } });
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Error deleting book images');
