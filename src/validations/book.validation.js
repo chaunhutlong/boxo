@@ -8,7 +8,7 @@ const createBook = {
     isbn: Joi.string().required().max(13),
     language: Joi.string().required(),
     totalPages: Joi.number().required().min(0),
-    priceDiscount: Joi.number().min(0),
+    priceDiscount: Joi.number().min(0).allow(null, ''),
     price: Joi.number().min(0).required(),
     description: Joi.string().allow(null, ''),
     publisherId: Joi.string().custom(objectId).required(),

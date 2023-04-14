@@ -68,7 +68,9 @@ const createBook = async (bookBody, bookImageBase64) => {
 
     return book;
   } catch (error) {
-    await deleteBookImages(bookImages);
+    if (bookImages) {
+      await deleteBookImages(bookImages);
+    }
 
     let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
     if (error.statusCode) {
