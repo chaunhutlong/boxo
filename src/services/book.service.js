@@ -127,7 +127,7 @@ const getBookById = async (id) => {
  * @returns {Promise<Book>}
  */
 const updateBookById = async (bookId, bookBody, bookImageBase64) => {
-  let bookImage;
+  let bookImages;
   try {
     const book = await Book.findById(bookId).populate('images');
 
@@ -153,9 +153,14 @@ const updateBookById = async (bookId, bookBody, bookImageBase64) => {
       // if bookImageBase64 is base64 string, delete old images and upload new images
       await deleteBookImages(book.images);
 
-      bookImage = await uploadBookImages(bookImageArray, book._id);
-      book.images = bookImage.map((image) => image._id);
-      await Promise.all([book.save(), BookImage.insertMany(bookImage)]);
+      bookImages = await uploadBookImages(bookImageArray, book._id);
+      book.images = bookImages.map((image) => image._id);
+
+      Promise.all([book.save(), BookImage.insertMany(bookImages)]).catch((err) => {
+        deleteBookImages(bookImages).finally(() => {
+          throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `Error updating book: ${err}`);
+        });
+      });
     }
 
     return book;
