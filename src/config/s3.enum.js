@@ -1,1 +1,4 @@
-module.exports.S3Enum = ['book-image', 'avatar'];
+module.exports.bucket = {
+  IMAGES: 'boxo-images',
+  AVATAR: 'boxo-avatar',
+};

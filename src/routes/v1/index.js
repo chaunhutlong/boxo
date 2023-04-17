@@ -13,6 +13,7 @@ const addressRoute = require('./address.route');
 const provinceRoute = require('./province.route');
 const orderRoute = require('./order.route');
 const discountRoute = require('./discount.route');
+const postRoute = require('./post.route');
 
 const router = express.Router();
 
@@ -72,6 +73,10 @@ const defaultRoutes = [
   {
     path: '/provinces',
     route: provinceRoute,
+  },
+  {
+    path: '/posts',
+    route: postRoute,
   },
 ];
 

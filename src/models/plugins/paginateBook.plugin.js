@@ -2,8 +2,7 @@
 /* eslint-disable prefer-const */
 
 const { getSignedUrl } = require('../../utils/s3');
-
-const BUCKET = process.env.AWS_S3_BOOK_IMAGE_BUCKET;
+const { bucket } = require('../../config/s3.enum');
 
 const paginateBook = (schema) => {
   /**
@@ -66,7 +65,7 @@ const paginateBook = (schema) => {
       if (datas.length) {
         datas = datas.map((data) => {
           const images = data.images.map((image) => {
-            const presignedUrl = getSignedUrl(BUCKET, image.key);
+            const presignedUrl = getSignedUrl(bucket.IMAGES, image.key);
             const result = {
               ...image.toObject(),
               url: presignedUrl,
