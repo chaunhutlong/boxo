@@ -1,36 +1,15 @@
 const httpStatus = require('http-status');
-const { Book, BookImage } = require('../models');
+const { Book } = require('../models');
 const ApiError = require('../utils/ApiError');
-const { getSignedUrl, deleteFile, uploadImagesBase64 } = require('../utils/s3');
-
+const { getSignedUrl, deleteFilesFromS3, uploadImagesBase64 } = require('../utils/s3');
+const { parseBase64Image } = require('../utils/base64');
 const { bucket } = require('../config/s3.enum');
 
-async function deleteBookImages(bookImages) {
-  if (!bookImages) return;
-  const keys = bookImages.map((image) => image.key);
+async function uploadBookImages(parsedImages, bookId) {
   try {
-    await Promise.all(keys.map((key) => deleteFile(bucket.IMAGES, key)));
-    await BookImage.deleteMany({ key: { $in: keys } });
-  } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Error deleting book images');
-  }
-}
+    const bookImages = await uploadImagesBase64(bucket.IMAGES, parsedImages, `book-${bookId}`);
 
-async function uploadBookImages(base64ImagesString, bookId) {
-  try {
-    const base64ImagesArray = Array.isArray(base64ImagesString) ? base64ImagesString : [base64ImagesString];
-
-    const start = performance.now();
-    const bookImagesKey = await uploadImagesBase64(bucket.IMAGES, base64ImagesArray, `book-${bookId}`);
-    console.log('uploadImagesBase64 take' + (performance.now() - start) + 'ms');
-
-    const bookImageDocs = bookImagesKey.map((imageKey) => ({
-      key: imageKey,
-      bookId,
-    }));
-
-    const createBookImages = await BookImage.insertMany(bookImageDocs);
-    return createBookImages;
+    return bookImages;
   } catch (err) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, err.message);
   }
@@ -42,7 +21,6 @@ async function uploadBookImages(base64ImagesString, bookId) {
  * @returns {Promise<Book>}
  */
 const createBook = async (bookBody, base64ImagesString) => {
-  let bookImages;
   try {
     if (await Book.isNameTaken(bookBody.name)) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Name already taken');
@@ -50,28 +28,19 @@ const createBook = async (bookBody, base64ImagesString) => {
 
     const book = new Book(bookBody);
 
-    const start = performance.now();
     if (base64ImagesString) {
-      console.log('base64ImagesString', base64ImagesString);
-      bookImages = await uploadBookImages(base64ImagesString, book._id);
-      console.log(performance.now() - start);
-      const bookImagesIds = bookImages.map((image) => image._id);
+      const base64ImagesArray = Array.isArray(base64ImagesString) ? base64ImagesString : [base64ImagesString];
 
-      book.images = bookImagesIds;
+      const parsedImages = base64ImagesArray.map((base64Image) => parseBase64Image(base64Image));
 
-      book.save().catch((err) => {
-        console.log(performance.now() - start);
-        deleteBookImages(bookImages).finally(() => {
-          throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `Error saving book: ${err}`);
-        });
-      });
-    } else {
-      await book.save();
+      const uploads = await uploadBookImages(parsedImages, book._id);
+
+      const bookImages = uploads.map(({ Key, Location }) => ({ key: Key, url: Location }));
+
+      book.images = bookImages;
     }
 
-    const end = performance.now();
-
-    console.log(`Create book took ${end - start} milliseconds.`);
+    await book.save();
 
     return book;
   } catch (error) {
@@ -93,7 +62,7 @@ const createBook = async (bookBody, base64ImagesString) => {
  * @returns {Promise<QueryResult>}
  */
 const queryBooks = async (filter, options) => {
-  const books = await Book.paginate(filter, { ...options, populate: 'images' });
+  const books = await Book.paginate(filter, { options });
 
   return books;
 };
@@ -104,12 +73,7 @@ const queryBooks = async (filter, options) => {
  * @returns {Promise<Book>}
  */
 const getBookById = async (id) => {
-  const book = await Book.findById(id)
-    .lean()
-    .populate('genres')
-    .populate('authors')
-    .populate('publisher')
-    .populate('images');
+  const book = await Book.findById(id).populate('genres').populate('authors').populate('publisher');
 
   if (!book) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Book not found');
@@ -117,8 +81,7 @@ const getBookById = async (id) => {
 
   Object.keys(book.images).forEach((key) => {
     book.images[key].url = getSignedUrl(bucket.IMAGES, book.images[key].key);
-    delete book.images[key].key;
-    delete book.images[key].bookId;
+    book.images[key].key = undefined;
   });
 
   return book;
@@ -130,10 +93,10 @@ const getBookById = async (id) => {
  * @param {Object} updateBody
  * @returns {Promise<Book>}
  */
-const updateBookById = async (bookId, bookBody, base64ImageString) => {
+const updateBookById = async (bookId, bookBody, base64ImagesString) => {
   let bookImages;
   try {
-    const book = await Book.findById(bookId).populate('images');
+    const book = await Book.findById(bookId);
 
     if (!book) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Book not found');
@@ -145,25 +108,24 @@ const updateBookById = async (bookId, bookBody, base64ImageString) => {
 
     Object.assign(book, bookBody);
 
-    if (base64ImageString) {
-      const bookImageArray = Array.isArray(base64ImageString) ? base64ImageString : [base64ImageString];
+    if (base64ImagesString) {
+      const base64ImagesArray = Array.isArray(base64ImagesString) ? base64ImagesString : [base64ImagesString];
 
       // if bookImageArray has link, that not do anything
-      if (bookImageArray[0].startsWith('http')) {
+      if (base64ImagesArray[0].startsWith('http')) {
         await book.save();
         return book;
       }
 
       // if base64ImageString is base64 string, delete old images and upload new images
-      await deleteBookImages(book.images);
 
-      bookImages = await uploadBookImages(bookImageArray, book._id);
-      book.images = bookImages.map((image) => image._id);
+      const parsedImages = base64ImagesArray.map((base64Image) => parseBase64Image(base64Image));
+      const uploads = await uploadBookImages(parsedImages, book._id);
 
-      Promise.all([book.save(), BookImage.insertMany(bookImages)]).catch((err) => {
-        deleteBookImages(bookImages).finally(() => {
-          throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `Error updating book: ${err}`);
-        });
+      bookImages = uploads.map(({ Key, Location }) => ({ key: Key, url: Location }));
+
+      Object.keys(book.images).forEach(async (key) => {
+        await deleteFilesFromS3(bucket.IMAGES, book.images[key].key);
       });
     }
 
@@ -188,8 +150,7 @@ const deleteBookById = async (bookId) => {
   const book = await Book.findById(bookId).populate('images');
 
   Object.keys(book.images).forEach(async (key) => {
-    await deleteFile(bucket.IMAGES, book.images[key].key);
-    await BookImage.deleteOne({ key: book.images[key].key });
+    await deleteFilesFromS3(bucket.IMAGES, book.images[key].key);
   });
 
   await book.remove();

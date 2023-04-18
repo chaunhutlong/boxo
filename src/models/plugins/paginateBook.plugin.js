@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable prefer-const */
-
+const { createSortingCriteria, getLimit, getPage, getSkip, getCount, getDocs } = require('./paginate.generic');
 const { getSignedUrl } = require('../../utils/s3');
 const { bucket } = require('../../config/s3.enum');
 
@@ -24,73 +24,46 @@ const paginateBook = (schema) => {
    * @returns {Promise<QueryResult>}
    */
   schema.statics.paginate = async function (filter, options) {
-    let sort = '';
-    if (options.sortBy) {
-      const sortingCriteria = [];
-      options.sortBy.split(',').forEach((sortOption) => {
-        const [key, order] = sortOption.split(':');
-        sortingCriteria.push((order === 'desc' ? '-' : '') + key);
-      });
-      sort = sortingCriteria.join(' ');
-    } else {
-      sort = 'createdAt';
-    }
+    const start = performance.now();
+    const sort = options.sortBy ? createSortingCriteria(options.sortBy) : 'createdAt';
+    const limit = getLimit(options.limit);
+    const page = getPage(options.page);
+    const skip = getSkip(page, limit);
 
-    const limit = options.limit && parseInt(options.limit, 10) > 0 ? parseInt(options.limit, 10) : 10;
-    const page = options.page && parseInt(options.page, 10) > 0 ? parseInt(options.page, 10) : 1;
-    const skip = (page - 1) * limit;
+    const totalResults = await getCount(this, filter);
+    let datas = await getDocs(this, filter, sort, skip, limit, options.populate);
 
-    const countPromise = this.countDocuments(filter).exec();
-    let docsPromise = this.find(filter).sort(sort).skip(skip).limit(limit);
+    const totalPages = Math.ceil(totalResults / limit);
 
-    if (options.populate) {
-      options.populate.split(',').forEach((populateOption) => {
-        docsPromise = docsPromise.populate(
-          populateOption
-            .split('.')
-            .reverse()
-            .reduce((a, b) => ({ path: b, populate: a }))
-        );
-      });
-    }
-
-    docsPromise = docsPromise.exec();
-
-    return Promise.all([countPromise, docsPromise]).then((values) => {
-      let [totalResults, datas] = values;
-      // presign url for each image in results
-      // populate the image
-      // delete the key after presigning
-      // .lean() is used to convert the mongoose document to a plain javascript object
-      if (datas.length) {
-        datas = datas.map((data) => {
-          const images = data.images.map((image) => {
-            const presignedUrl = getSignedUrl(bucket.IMAGES, image.key);
-            const result = {
-              ...image.toObject(),
-              url: presignedUrl,
-            };
-            delete result.key;
-            delete result.bookId;
-            return result;
-          });
-          return {
-            ...data.toObject(),
-            images,
+    if (datas.length) {
+      datas = datas.map((data) => {
+        const images = data.images.map((image) => {
+          const presignedUrl = getSignedUrl(bucket.IMAGES, image.key);
+          const result = {
+            ...image.toObject(),
+            url: presignedUrl,
           };
+          delete result.key;
+          return result;
         });
-      }
+        return {
+          ...data.toObject(),
+          images,
+        };
+      });
+    }
 
-      const totalPages = Math.ceil(totalResults / limit);
-      const result = {
-        datas,
-        page,
-        limit,
-        totalPages,
-        totalResults,
-      };
-      return Promise.resolve(result);
-    });
+    const result = {
+      datas,
+      page,
+      limit,
+      totalPages,
+      totalResults,
+    };
+
+    const end = performance.now();
+    console.log(`paginateBook took ${end - start} milliseconds.`);
+    return result;
   };
 };
 

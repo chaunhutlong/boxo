@@ -1,11 +1,12 @@
 const AWS = require('aws-sdk');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
+const stream = require('stream');
 const httpStatus = require('http-status');
 const ApiError = require('./ApiError');
 const { bucket } = require('../config/s3.enum');
 
-const MAX_FILE_SIZE = 1024 * 1024 * 2; // 2MB
+const MAX_FILE_SIZE = 1024 * 1024 * 5; // 5MB
 const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
 const SIGNED_URL_EXPIRES_SECONDS = 60 * 60; // 1 hour
 
@@ -45,7 +46,7 @@ function awsS3Connection(bucketName) {
   };
 }
 
-function uploadFile(BUCKET) {
+function uploadFileToS3(BUCKET) {
   const { s3 } = awsS3Connection(BUCKET);
   const storage = multerS3({
     s3,
@@ -76,31 +77,83 @@ function uploadFile(BUCKET) {
   return upload;
 }
 
-async function uploadImagesBase64(bucketName, base64ImagesArray, fileName) {
+async function uploadImagesBase64(bucketName, parsedImages, fileName) {
   const { s3 } = awsS3Connection(bucketName);
 
-  const uploads = base64ImagesArray.map(async (base64String) => {
-    const buffer = Buffer.from(base64String.replace(/^data:image\/\w+;base64,/, ''), 'base64');
-
-    const key = `${Date.now().toString()}-${fileName}`;
+  const uploadPromises = parsedImages.map((image, index) => {
+    const pass = new stream.PassThrough();
+    pass.end(image.data);
 
     const params = {
       Bucket: bucketName,
-      Key: key,
-      Body: buffer,
-      ACL: 'public-read',
-      ContentEncoding: 'base64',
-      ContentType: 'image/jpeg',
+      Key: `${Date.now()}-${fileName}-${index}.${image.type.split('/')[1]}`,
+      Body: pass,
+      ContentType: image.type,
     };
 
-    if (buffer.length > MAX_FILE_SIZE) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'File size is too large');
-    }
-    await s3.upload(params).promise();
-    return key;
+    return s3.upload(params).promise();
   });
 
-  return Promise.all(uploads);
+  return Promise.all(uploadPromises);
+}
+
+async function uploadImagesMultipart(bucket, parsedImages, fileName) {
+  const { s3 } = awsS3Connection(bucket);
+
+  const uploadPromises = parsedImages.map(async (image, index) => {
+    let uploadId;
+    const pass = new stream.PassThrough();
+    pass.end(image.data);
+
+    const params = {
+      Bucket: bucket,
+      Key: `${Date.now()}-${fileName}-${index}.${image.type.split('/')[1]}`,
+    };
+
+    const multipartUpload = await s3.createMultipartUpload(params).promise();
+
+    uploadId = multipartUpload.UploadId;
+
+    const uploadPromises = [];
+
+    const partSize = 1024 * 1024 * 5; // 5MB
+    const parts = Math.ceil(image.data.length / partSize);
+
+    for (let i = 0; i < parts; i += 1) {
+      const start = i * partSize;
+      const end = Math.min(start + partSize, image.data.length);
+
+      const partParams = {
+        Body: image.data.slice(start, end),
+        Bucket: bucket,
+        Key: params.Key,
+        PartNumber: i + 1,
+        UploadId: uploadId,
+      };
+
+      uploadPromises.push(s3.uploadPart(partParams).promise());
+    }
+
+    const data = await Promise.all(uploadPromises);
+
+    const completedParts = data.map((part, index) => ({
+      ETag: part.ETag,
+      PartNumber: index + 1,
+    }));
+
+    const completeParams = {
+      Bucket: bucket,
+      Key: params.Key,
+      MultipartUpload: {
+        Parts: completedParts,
+      },
+      UploadId: uploadId,
+    };
+
+    return s3.completeMultipartUpload(completeParams).promise();
+  });
+
+  return Promise.all(uploadPromises);
 }
 
 function getSignedUrl(BUCKET, key) {
@@ -115,21 +168,28 @@ function getSignedUrl(BUCKET, key) {
   return s3.getSignedUrl('getObject', params);
 }
 
-function deleteFile(BUCKET, key) {
+function deleteFilessFromS3(BUCKET, keys) {
   const { s3 } = awsS3Connection(BUCKET);
+
+  if (!Array.isArray(keys)) {
+    keys = [keys];
+  }
 
   const params = {
     Bucket: BUCKET,
-    Key: key,
+    Delete: {
+      Objects: keys.map((key) => ({ Key: key })),
+    },
   };
 
-  return s3.deleteObject(params).promise();
+  return s3.deleteObjects(params).promise();
 }
 
 module.exports = {
   awsS3Connection,
-  uploadFile,
+  uploadFileToS3,
   getSignedUrl,
-  deleteFile,
+  deleteFilessFromS3,
   uploadImagesBase64,
+  uploadImagesMultipart,
 };

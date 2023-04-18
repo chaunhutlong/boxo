@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON, paginate } = require('./plugins');
+const { toJSON, paginate, deleteRelatedDocuments } = require('./plugins');
 
 const authorSchema = mongoose.Schema({
   name: {
@@ -25,6 +25,15 @@ authorSchema.statics.isNameTaken = async function (name, excludeAuthorId) {
   const author = await this.findOne({ name, _id: { $ne: excludeAuthorId } });
   return !!author;
 };
+
+deleteRelatedDocuments(authorSchema, {
+  relatedSchemas: [
+    {
+      modelName: 'Book',
+      fieldName: 'authors',
+    },
+  ],
+});
 
 /**
  * @typedef Author

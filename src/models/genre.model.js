@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON, paginate } = require('./plugins');
+const { toJSON, paginate, deleteRelatedDocuments } = require('./plugins');
 
 const genreSchema = mongoose.Schema({
   name: {
@@ -18,6 +18,15 @@ genreSchema.statics.isNameTaken = async function (name, excludeGenreId) {
   const genre = await this.findOne({ name, _id: { $ne: excludeGenreId } });
   return !!genre;
 };
+
+deleteRelatedDocuments(genreSchema, {
+  relatedSchemas: [
+    {
+      modelName: 'Book',
+      fieldName: 'genres',
+    },
+  ],
+});
 
 /**
  * @typedef Genre

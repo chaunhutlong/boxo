@@ -1,7 +1,7 @@
 const httpStatus = require('http-status');
 const { Post } = require('../models');
 const ApiError = require('../utils/ApiError');
-const { getSignedUrl, deleteFileFromS3, uploadImagesBase64 } = require('../utils/s3');
+const { getSignedUrl, deleteFilesFromS3, uploadImagesBase64 } = require('../utils/s3');
 
 const BUCKET = process.env.AWS_S3_IMAGE_BUCKET;
 

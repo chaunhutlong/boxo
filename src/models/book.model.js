@@ -2,6 +2,21 @@ const mongoose = require('mongoose');
 const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
 const { toJSON, paginateBook } = require('./plugins');
 
+const imageSchema = new mongoose.Schema(
+  {
+    key: {
+      type: String,
+      required: true,
+    },
+    url: {
+      type: String,
+    },
+  },
+  {
+    _id: false,
+  }
+);
+
 const bookSchema = mongoose.Schema(
   {
     name: {
@@ -16,9 +31,9 @@ const bookSchema = mongoose.Schema(
     isbn: {
       type: String,
       required: true,
-      index: true,
       max: 13,
-      unique: true,
+      // index: true,
+      // unique: true,
     },
     language: {
       type: String,
@@ -53,12 +68,7 @@ const bookSchema = mongoose.Schema(
     imageCover: {
       type: mongoose.Schema.Types.ObjectId,
     },
-    images: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'BookImage',
-      },
-    ],
+    images: [imageSchema],
     authors: [
       {
         type: mongoose.Schema.Types.ObjectId,
