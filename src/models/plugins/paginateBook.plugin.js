@@ -24,7 +24,6 @@ const paginateBook = (schema) => {
    * @returns {Promise<QueryResult>}
    */
   schema.statics.paginate = async function (filter, options) {
-    const start = performance.now();
     const sort = options.sortBy ? createSortingCriteria(options.sortBy) : 'createdAt';
     const limit = getLimit(options.limit);
     const page = getPage(options.page);
@@ -61,8 +60,6 @@ const paginateBook = (schema) => {
       totalResults,
     };
 
-    const end = performance.now();
-    console.log(`paginateBook took ${end - start} milliseconds.`);
     return result;
   };
 };
