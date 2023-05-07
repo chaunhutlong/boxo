@@ -138,7 +138,7 @@ const processPaymentOrder = async (userId, paymentDetails) => {
     orderId: order._id,
     value: totalPayment,
     type: paymentDetails.type,
-    discount: discount ? discount._id : null,
+    discount: discount && discount.id,
   });
 
   // Update order and shipping references
