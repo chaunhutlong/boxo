@@ -83,6 +83,7 @@ discountSchema.statics.getAvailableDiscount = async function (code) {
 
   return discount;
 };
+
 /**
  * @typedef Discount
  * @property {string} name

@@ -17,7 +17,7 @@ const paymentSchema = mongoose.Schema(
       enum: paymentTypes,
       required: true,
     },
-    order: {
+    orderId: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'Order',
       required: true,

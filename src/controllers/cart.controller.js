@@ -27,13 +27,13 @@ const clearCart = catchAsync(async (req, res) => {
   res.send(cart);
 });
 
-const addCheckedItem = catchAsync(async (req, res) => {
-  const cart = await cartService.addCheckedItem(req.user.id, req.body);
+const updateCartCheckStatus = catchAsync(async (req, res) => {
+  const cart = await cartService.updateCartCheckStatus(req.user.id, req.body);
   res.send(cart);
 });
 
-const addAllCheckedItems = catchAsync(async (req, res) => {
-  const cart = await cartService.addAllCheckedItems(req.user.id, req.body);
+const updateAllCartItemsCheckStatus = catchAsync(async (req, res) => {
+  const cart = await cartService.updateAllCartItemsCheckStatus(req.user.id, req.body);
   res.send(cart);
 });
 
@@ -43,6 +43,6 @@ module.exports = {
   updateCart,
   removeItemFromCart,
   clearCart,
-  addCheckedItem,
-  addAllCheckedItems,
+  updateCartCheckStatus,
+  updateAllCartItemsCheckStatus,
 };

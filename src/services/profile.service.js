@@ -1,6 +1,6 @@
 const httpStatus = require('http-status');
 const { Profile, User } = require('../models');
-const { getSignedUrl, deleteFileFromS3 } = require('../utils/s3');
+const { getSignedUrl, deleteFilesFromS3FromS3 } = require('../utils/s3');
 const ApiError = require('../utils/ApiError');
 
 const BUCKET = process.env.AWS_S3_AVATAR_BUCKET;
@@ -17,7 +17,7 @@ const createOrUpdateProfile = async (userId, avatar, profileBody) => {
       Object.assign(profile, profileBody);
       // TODO: remove old avatar from s3
       if (avatar) {
-        await deleteFileFromS3(BUCKET, profile.avatar);
+        await deleteFilesFromS3FromS3(BUCKET, profile.avatar);
         profile.avatar = avatar.key;
       }
 
@@ -33,7 +33,7 @@ const createOrUpdateProfile = async (userId, avatar, profileBody) => {
     return newProfile;
   } catch (error) {
     if (avatar) {
-      await deleteFileFromS3(BUCKET, avatar.key);
+      await deleteFilesFromS3FromS3(BUCKET, avatar.key);
     }
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
   }

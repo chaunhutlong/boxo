@@ -3,20 +3,12 @@ const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
 const profileValidation = require('../../validations/profile.validation');
 const profileController = require('../../controllers/profile.controller');
-const { uploadFileToS3 } = require('../../utils/s3');
 
 const router = express.Router();
 
-const BUCKET_NAME = process.env.AWS_S3_AVATAR_BUCKET || 'avatar';
-
 router
   .route('/')
-  .post(
-    auth(),
-    uploadFileToS3(BUCKET_NAME).single('avatar'),
-    validate(profileValidation.createOrUpdateProfile),
-    profileController.createOrUpdateProfile
-  )
+  .post(auth(), validate(profileValidation.createOrUpdateProfile), profileController.createOrUpdateProfile)
   .get(auth(), profileController.getProfileByUserId);
 
 router.put('/password', auth(), validate(profileValidation.updatePassword), profileController.updatePassword);

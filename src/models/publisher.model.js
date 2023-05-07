@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-const { toJSON, paginate } = require('./plugins');
+const Book = require('./book.model');
+const { toJSON, paginate, deleteRelatedDocuments } = require('./plugins');
 
 const publisherSchema = mongoose.Schema({
   name: {
@@ -29,6 +30,14 @@ const publisherSchema = mongoose.Schema({
 
 publisherSchema.plugin(toJSON);
 publisherSchema.plugin(paginate);
+publisherSchema.plugin(deleteRelatedDocuments, {
+  relatedModels: [
+    {
+      modelName: 'Book',
+      fieldName: 'publisher',
+    },
+  ],
+});
 
 publisherSchema.statics.isNameTaken = async function (name, excludePublisherId) {
   const publisher = await this.findOne({ name, _id: { $ne: excludePublisherId } });

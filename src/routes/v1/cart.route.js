@@ -16,9 +16,14 @@ router.put('/remove', auth(), validate(cartValidation.removeItemFromCart), cartC
 
 router.put('/clear', auth(), cartController.clearCart);
 
-router.put('/checked-item', auth(), validate(cartValidation.addCheckedItem), cartController.addCheckedItem);
+router.put('/checked-item', auth(), validate(cartValidation.updateCartCheckStatus), cartController.updateCartCheckStatus);
 
-router.put('/checked-all-items', auth(), cartController.addAllCheckedItems);
+router.put(
+  '/checked-all-items',
+  auth(),
+  validate(cartValidation.updateAllCartItemsCheckStatus),
+  cartController.updateAllCartItemsCheckStatus
+);
 module.exports = router;
 
 /**

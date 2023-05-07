@@ -6,9 +6,34 @@ const orderSchema = mongoose.Schema(
   {
     books: [
       {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: 'Book',
-        required: true,
+        bookId: {
+          type: String,
+          required: true,
+        },
+        name: {
+          type: String,
+          required: true,
+        },
+        price: {
+          type: Number,
+          min: 0,
+          required: true,
+        },
+        priceDiscount: {
+          type: Number,
+          min: 0,
+        },
+        imageUrl: {
+          type: String,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          min: 1,
+        },
+      },
+      {
+        _id: false,
       },
     ],
     user: {

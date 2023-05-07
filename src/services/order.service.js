@@ -11,7 +11,7 @@ const ApiError = require('../utils/ApiError');
  */
 
 const getShippingByOrderId = async (orderId) => {
-  const shipping = await Shipping.findOne({ orderId }).populate('addressId').lean();
+  const shipping = await Shipping.findOne({ order: orderId });
   return shipping;
 };
 
@@ -51,7 +51,7 @@ const queryOrders = async (filter, options) => {
  * @throws {NotFoundError}
  */
 const getOrderById = async (id) => {
-  const order = await Order.findById(id);
+  const order = await Order.findById(id).populate('books.bookId').populate('shipping').populate('payment');
   if (!order) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
   }
@@ -61,49 +61,47 @@ const getOrderById = async (id) => {
 /**
  * Payment order
  * @param {ObjectId} userId
- * @param {Object} paymentBody
+ * @param {Object} paymentDetails
  * @returns {Promise<Order>}
  */
-const paymentOrder = async (userId, paymentBody) => {
-  const cartBooks = await Cart.find({
-    userId,
-    'books.isChecked': true,
-  }).populate('books.bookId');
+const processPaymentOrder = async (userId, paymentDetails) => {
+  const cart = await Cart.findOne({ userId });
 
-  if (cartBooks.length === 0) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'No books selected to payment');
+  if (!cart || cart.items.length === 0) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Cart is empty');
   }
 
-  let totalPayment = cartBooks[0].books.reduce((acc, book) => {
-    return acc + book.bookId.price * book.quantity;
-  }, 0);
+  let totalPayment = cart.items.reduce((total, item) => total + item.totalPrice, 0);
 
-  const address = await Address.findOne({ userId, isDefault: true });
+  const address = await Address.findOne({ userId, isDefault: true }).populate({
+    path: 'city',
+    populate: {
+      path: 'province',
+    },
+  });
 
   if (!address) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'No default address found');
   }
 
-  const discount = await Discount.getAvailableDiscount(paymentBody.discountCode);
+  const discount = await Discount.getAvailableDiscount(paymentDetails.discountCode);
 
-  if (discount) {
+  if (discount && totalPayment >= discount.minRequiredValue && discount.quantity > 0) {
     // check min required value and max discount value
-    if (totalPayment >= discount.minRequiredValue && totalPayment >= discount.maxDiscountValue) {
-      switch (discount.type) {
-        case 'percentage':
-          totalPayment -= (totalPayment * discount.value) / 100;
-          break;
-        case 'value':
-          totalPayment -= discount.value;
-          break;
-        default:
-          break;
-      }
-
-      // update discount quantity
-      discount.quantity -= 1;
-      await discount.save();
+    switch (discount.type) {
+      case 'percentage':
+        totalPayment -= (totalPayment * discount.value) / 100;
+        break;
+      case 'value':
+        totalPayment -= discount.value;
+        break;
+      default:
+        throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Unexpected discount type');
     }
+
+    // update discount quantity
+    discount.quantity -= 1;
+    await discount.save();
   }
 
   const shippingCost = await Shipping.calculateShippingValue(address.distance);
@@ -114,74 +112,85 @@ const paymentOrder = async (userId, paymentBody) => {
   const order = await Order.create({
     user: userId,
     totalPayment,
-    discount: discount ? discount._id : null,
-    books: cartBooks[0].books,
+    discount: discount && discount.id,
+    books: cart.items,
     status: orderStatuses.PENDING,
   });
 
+  const cityAddress = {
+    city: address.city && address.city.name,
+    province: address.city.province && address.city.province.name,
+    name: address.name,
+    phone: address.phone,
+    description: address.description,
+  };
+
   const shipping = await Shipping.create({
-    address: address._id,
+    address: cityAddress,
     value: shippingCost,
     trackingNumber: await Shipping.generateTrackingNumber(8),
     status: shippingStatuses.PENDING,
     order: order._id,
   });
 
+  // Create payment
   const payment = await Payment.create({
-    order: order._id,
+    orderId: order._id,
     value: totalPayment,
-    type: paymentBody.type,
-    discount: discount ? discount._id : null,
+    type: paymentDetails.type,
+    discount: discount && discount.id,
   });
 
-  // update order and shipping
+  // Update order and shipping references
   order.shipping = shipping._id;
   order.payment = payment._id;
 
   // clear cart to empty
-  cartBooks[0].books = [];
-  await cartBooks[0].save();
-
-  await order.save();
+  cart.items = [];
+  await Promise.all([cart.save(), order.save()]);
   return order;
 };
 
+/**
+ * Checkout order
+ * @param {ObjectId} userId
+ * @param {ObjectId} orderId
+ * @returns {Promise<Order>}
+ */
 const checkoutOrder = async (userId, orderId) => {
-  const payment = await Payment.find({ order: orderId, isPaid: false });
+  try {
+    const payment = await Payment.findOne({ orderId, isPaid: false });
 
-  if (!payment) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'No payment found');
-  }
+    if (!payment) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'No payment found');
+    }
 
-  // implement payment gateway then update payment status
-  payment.isPaid = true;
+    // Implement payment gateway then update payment status
+    payment.isPaid = true;
+    await payment.save();
 
-  const order = await Order.findById(orderId).populate('shipping').populate('books.bookId').lean();
+    const order = await Order.findById(orderId).populate('shipping').populate('books.bookId');
 
-  // update order status
-  order.status = orderStatuses.PAID;
+    // Update order status
+    order.status = orderStatuses.PAID;
 
-  // update shipping status
-  order.shipping.status = shippingStatuses.SHIPPED;
+    // Update shipping status
+    order.shipping.status = shippingStatuses.SHIPPED;
 
-  // update books quantity
-  const books = order.books.map((book) => {
-    book.bookId.quantity -= book.quantity;
-    return book.bookId;
-  });
-
-  await Book.bulkWrite(
-    books.map((book) => ({
+    // Update books quantity
+    const bookUpdates = order.books.map((book) => ({
       updateOne: {
-        filter: { _id: book._id },
-        update: { quantity: book.quantity },
+        filter: { _id: book.bookId._id },
+        update: { $inc: { quantity: -book.quantity } },
       },
-    }))
-  );
+    }));
 
-  await order.save();
+    await Book.bulkWrite(bookUpdates);
 
-  return order;
+    return order;
+  } catch (error) {
+    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message);
+  }
 };
 
 module.exports = {
@@ -189,6 +198,6 @@ module.exports = {
   updateShipping,
   queryOrders,
   getOrderById,
-  paymentOrder,
+  processPaymentOrder,
   checkoutOrder,
 };

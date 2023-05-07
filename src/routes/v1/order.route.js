@@ -13,7 +13,7 @@ router
 
 router.route('/').get(auth(), validate(orderValidation.getOrders), orderController.getOrders);
 
-router.route('/payment').post(auth(), validate(orderValidation.paymentOrder), orderController.paymentOrder);
+router.route('/payment').post(auth(), validate(orderValidation.processPaymentOrder), orderController.processPaymentOrder);
 
 router.route('/checkout').post(auth(), validate(orderValidation.checkoutOrder), orderController.checkoutOrder);
 
