@@ -21,14 +21,14 @@ const removeItemFromCart = {
   }),
 };
 
-const addCheckedItem = {
+const updateCartCheckStatus = {
   body: Joi.object().keys({
     bookId: Joi.string().custom(objectId).required(),
     isChecked: Joi.boolean().required(),
   }),
 };
 
-const addAllCheckedItems = {
+const updateAllCartItemsCheckStatus = {
   body: Joi.object().keys({
     isChecked: Joi.boolean().required(),
   }),
@@ -44,7 +44,7 @@ module.exports = {
   addToCart,
   updateCart,
   removeItemFromCart,
-  addCheckedItem,
-  addAllCheckedItems,
+  updateCartCheckStatus,
+  updateAllCartItemsCheckStatus,
   clearCart,
 };

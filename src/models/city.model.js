@@ -18,7 +18,7 @@ const citySchema = mongoose.Schema({
     type: Number,
     required: true,
   },
-  provinceId: {
+  province: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Province',
   },

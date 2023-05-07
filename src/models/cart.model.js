@@ -1,52 +1,65 @@
 const mongoose = require('mongoose');
 const { toJSON } = require('./plugins');
 
-const cartSchema = mongoose.Schema(
+const bookSchema = mongoose.Schema(
   {
-    userId: {
+    bookId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'Book',
       required: true,
     },
-    books: [
-      {
-        bookId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Book',
-          required: true,
-        },
-        quantity: {
-          type: Number,
-          required: true,
-          min: 1,
-        },
-        price: {
-          type: Number,
-          required: true,
-          min: 0,
-        },
-        isChecked: {
-          type: Boolean,
-          required: true,
-          default: false,
-        },
-      },
-    ],
+    name: {
+      type: String,
+      required: true,
+    },
+    price: {
+      type: Number,
+      min: 0,
+      required: true,
+    },
+    priceDiscount: {
+      type: Number,
+      min: 0,
+    },
+    imageUrl: {
+      type: String,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    totalPrice: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    isChecked: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
   },
   {
-    timestamps: true,
+    _id: false,
   }
 );
 
-// add plugin that converts mongoose to json
+const cartSchema = mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  items: [bookSchema],
+});
+
 cartSchema.plugin(toJSON);
 
 /**
  * @typedef Cart
  * @property {ObjectId} userId
- * @property {ObjectId} books
- * @property {Date} createdAt
- * @property {Date} updatedAt
+ * @property {ObjectId} items
  */
 
 const Cart = mongoose.model('Cart', cartSchema);

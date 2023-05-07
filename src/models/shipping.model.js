@@ -2,6 +2,27 @@ const mongoose = require('mongoose');
 const { toJSON } = require('./plugins');
 const { shippingStatuses } = require('../config/shipping.enum');
 
+const addressSchema = mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+  },
+  phone: {
+    type: String,
+    required: true,
+  },
+  city: {
+    type: String,
+    required: true,
+  },
+  province: {
+    type: String,
+  },
+});
+
 const shippingSchema = mongoose.Schema(
   {
     trackingNumber: {
@@ -14,9 +35,9 @@ const shippingSchema = mongoose.Schema(
       enum: shippingStatuses,
       default: shippingStatuses.PENDING,
     },
+
     address: {
-      type: mongoose.SchemaTypes.ObjectId,
-      ref: 'Address',
+      type: addressSchema,
       required: true,
     },
     order: {

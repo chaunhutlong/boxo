@@ -8,7 +8,6 @@ const { bucket } = require('../config/s3.enum');
 async function uploadBookImages(parsedImages, bookId) {
   try {
     const bookImages = await uploadImagesBase64(bucket.IMAGES, parsedImages, `book-${bookId}`);
-
     return bookImages;
   } catch (err) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, err.message);
@@ -18,6 +17,7 @@ async function uploadBookImages(parsedImages, bookId) {
 /**
  * Create a book
  * @param {Object} bookBody
+ * @param {string|string[]} base64ImagesString
  * @returns {Promise<Book>}
  */
 const createBook = async (bookBody, base64ImagesString) => {
@@ -28,27 +28,26 @@ const createBook = async (bookBody, base64ImagesString) => {
 
     const book = new Book(bookBody);
 
+    let parsedImages = [];
     if (base64ImagesString) {
       const base64ImagesArray = Array.isArray(base64ImagesString) ? base64ImagesString : [base64ImagesString];
+      parsedImages = base64ImagesArray.map(parseBase64Image);
 
-      const parsedImages = base64ImagesArray.map((base64Image) => parseBase64Image(base64Image));
+      const uploadedImages = await uploadBookImages(parsedImages, book._id);
 
-      const uploads = await uploadBookImages(parsedImages, book._id);
+      book.images = uploadedImages.map(({ Key, Location }) => ({ key: Key, url: Location }));
+    }
 
-      const bookImages = uploads.map(({ Key, Location }) => ({ key: Key, url: Location }));
-
-      book.images = bookImages;
+    // if don't have the imageCover, get the first image
+    if (!book.imageCover && book.images.length > 0) {
+      [book.imageCover] = book.images;
     }
 
     await book.save();
 
     return book;
   } catch (error) {
-    let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
-    if (error.statusCode) {
-      statusCode = error.statusCode;
-    }
-    throw new ApiError(statusCode, error.message);
+    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message);
   }
 };
 
@@ -62,7 +61,7 @@ const createBook = async (bookBody, base64ImagesString) => {
  * @returns {Promise<QueryResult>}
  */
 const queryBooks = async (filter, options) => {
-  const books = await Book.paginate(filter, { options });
+  const books = await Book.paginate(filter, options);
 
   return books;
 };
@@ -91,10 +90,10 @@ const getBookById = async (id) => {
  * Update book by id
  * @param {ObjectId} bookId
  * @param {Object} updateBody
+ * @param {string|string[]} base64ImagesString
  * @returns {Promise<Book>}
  */
 const updateBookById = async (bookId, bookBody, base64ImagesString) => {
-  let bookImages;
   try {
     const book = await Book.findById(bookId);
 
@@ -120,24 +119,18 @@ const updateBookById = async (bookId, bookBody, base64ImagesString) => {
       // if base64ImageString is base64 string, delete old images and upload new images
 
       const parsedImages = base64ImagesArray.map((base64Image) => parseBase64Image(base64Image));
-      const uploads = await uploadBookImages(parsedImages, book._id);
-
-      bookImages = uploads.map(({ Key, Location }) => ({ key: Key, url: Location }));
 
       Object.keys(book.images).forEach(async (key) => {
         await deleteFilesFromS3(bucket.IMAGES, book.images[key].key);
       });
+
+      const uploads = await uploadBookImages(parsedImages, book._id);
+      book.images = uploads.map(({ Key, Location }) => ({ key: Key, url: Location }));
     }
 
     return book;
   } catch (error) {
-    let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
-
-    if (error.statusCode) {
-      statusCode = error.statusCode;
-    }
-
-    throw new ApiError(statusCode, error.message);
+    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message);
   }
 };
 

@@ -16,8 +16,9 @@ const getOrders = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['status']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
 
-  // add request user to filter
   filter.user = req.user.id;
+  options.populate = 'books,shipping,payment,discount';
+
   const result = await orderService.queryOrders(filter, options);
   res.send(result);
 });
@@ -27,8 +28,8 @@ const getOrderById = catchAsync(async (req, res) => {
   res.send(order);
 });
 
-const paymentOrder = catchAsync(async (req, res) => {
-  const order = await orderService.paymentOrder(req.user.id, req.body);
+const processPaymentOrder = catchAsync(async (req, res) => {
+  const order = await orderService.processPaymentOrder(req.user.id, req.body);
   res.send(order);
 });
 
@@ -43,6 +44,6 @@ module.exports = {
   updateShipping,
   getOrders,
   getOrderById,
-  paymentOrder,
+  processPaymentOrder,
   checkoutOrder,
 };

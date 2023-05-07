@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON, deleteRelatedDocuments } = require('./plugins');
+const { toJSON } = require('./plugins');
 
 const discountSchema = mongoose.Schema(
   {
@@ -83,15 +83,6 @@ discountSchema.statics.getAvailableDiscount = async function (code) {
 
   return discount;
 };
-
-deleteRelatedDocuments(discountSchema, {
-  relatedSchemas: [
-    {
-      modelName: 'Book',
-      fieldName: 'discounts',
-    },
-  ],
-});
 
 /**
  * @typedef Discount

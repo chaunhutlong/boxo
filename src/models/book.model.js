@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
-const { toJSON, paginateBook } = require('./plugins');
+const { toJSON, paginateBook, deleteRelatedDocuments } = require('./plugins');
 
 const imageSchema = new mongoose.Schema(
   {
@@ -32,8 +32,8 @@ const bookSchema = mongoose.Schema(
       type: String,
       required: true,
       max: 13,
-      // index: true,
-      // unique: true,
+      index: true,
+      unique: true,
     },
     language: {
       type: String,
@@ -66,7 +66,7 @@ const bookSchema = mongoose.Schema(
       required: true,
     },
     imageCover: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: imageSchema,
     },
     images: [imageSchema],
     authors: [
@@ -93,10 +93,6 @@ const bookSchema = mongoose.Schema(
         ref: 'Review',
       },
     ],
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
     hasDiscount: {
       type: Boolean,
       default: false,
@@ -116,6 +112,19 @@ bookSchema.statics.isNameTaken = async function (name, excludeBookId) {
   return !!book;
 };
 
+deleteRelatedDocuments(bookSchema, {
+  relatedSchemas: [
+    {
+      modelName: 'Review',
+      fieldName: 'book',
+    },
+    {
+      modelName: 'Discount',
+      fieldName: 'books',
+    },
+  ],
+});
+
 /**
  * @typedef Book
  * @property {string} name
@@ -127,7 +136,6 @@ bookSchema.statics.isNameTaken = async function (name, excludeBookId) {
  * @property {number} priceDiscount
  * @property {string} description
  * @property {Date} publishedDate
- * @property {boolean} isDeleted
  * @property {Date} createdAt
  * @property {Date} updatedAt
  * @property {Date} deletedAt

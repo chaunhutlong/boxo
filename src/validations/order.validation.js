@@ -31,7 +31,7 @@ const getOrders = {
   }),
 };
 
-const paymentOrder = {
+const processPaymentOrder = {
   body: Joi.object().keys({
     type: Joi.string().valid(...paymentTypes),
     discountCode: Joi.string().allow(''),
@@ -47,7 +47,7 @@ const checkoutOrder = {
 module.exports = {
   updateShipping,
   getOrders,
-  paymentOrder,
+  processPaymentOrder,
   paramsOrderId,
   checkoutOrder,
 };

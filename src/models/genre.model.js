@@ -20,7 +20,7 @@ genreSchema.statics.isNameTaken = async function (name, excludeGenreId) {
 };
 
 deleteRelatedDocuments(genreSchema, {
-  relatedSchemas: [
+  relatedSchemasdeleteRelatedDocuments: [
     {
       modelName: 'Book',
       fieldName: 'genres',

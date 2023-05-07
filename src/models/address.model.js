@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON } = require('./plugins');
+const { toJSON, deleteRelatedDocuments } = require('./plugins');
 
 const addressSchema = mongoose.Schema({
   name: {
@@ -16,7 +16,7 @@ const addressSchema = mongoose.Schema({
   description: {
     type: String,
   },
-  cityId: {
+  city: {
     type: mongoose.SchemaTypes.ObjectId,
     ref: 'City',
     required: true,
@@ -34,6 +34,14 @@ const addressSchema = mongoose.Schema({
 
 // add plugin that converts mongoose to json
 addressSchema.plugin(toJSON);
+addressSchema.plugin(deleteRelatedDocuments, {
+  relatedModels: [
+    {
+      modelName: 'Shipping',
+      fieldName: 'addressId',
+    },
+  ],
+});
 
 /**
  * @typedef Address
