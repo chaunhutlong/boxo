@@ -4,6 +4,12 @@ const ApiError = require('../utils/ApiError');
 const { getSignedUrl } = require('../utils/s3');
 const { bucket } = require('../config/s3.enum');
 
+const validateCart = (cart) => {
+  if (!cart || cart.items.length === 0) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Cart is empty');
+  }
+};
+
 const findCartItemByBookId = (cartItems, bookId) => {
   return cartItems.find((item) => item.bookId.toString() === bookId);
 };
@@ -38,7 +44,7 @@ const addToCart = async (userId, addToCartData) => {
         priceDiscount: book.priceDiscount,
         imageUrl: getSignedUrl(bucket.IMAGES, book.imageCover.key),
         quantity: addToCartData.quantity,
-        totalPrice: book.price * addToCartData.quantity,
+        totalPrice: book.priceDiscount ? book.priceDiscount * addToCartData.quantity : book.price * addToCartData.quantity,
       });
     }
 
@@ -120,6 +126,8 @@ const updateCartCheckStatus = async (userId, bookBody) => {
     { new: true }
   );
 
+  validateCart(cart);
+
   return cart;
 };
 
@@ -129,6 +137,8 @@ const updateAllCartItemsCheckStatus = async (userId, bookBody) => {
     { $set: { 'items.$[].isChecked': bookBody.isChecked } },
     { new: true }
   );
+
+  validateCart(cart);
 
   return cart;
 };

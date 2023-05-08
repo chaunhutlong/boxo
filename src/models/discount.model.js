@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { toJSON } = require('./plugins');
+const { discountTypes } = require('../config/discount.enum');
 
 const discountSchema = mongoose.Schema(
   {
@@ -22,7 +23,7 @@ const discountSchema = mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ['percentage', 'fixed'],
+      enum: discountTypes,
     },
     value: {
       type: Number,
