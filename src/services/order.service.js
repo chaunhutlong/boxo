@@ -141,13 +141,23 @@ const processPaymentOrder = async (userId, paymentDetails) => {
     discount: discount && discount.id,
   });
 
-  // Update order and shipping references
+  // Update order reference
   order.shipping = shipping._id;
   order.payment = payment._id;
 
-  // clear cart to empty
+  // Update book quantity
+  const bookUpdates = cart.items.map((item) => ({
+    updateOne: {
+      filter: { _id: item.bookId },
+      update: { $inc: { availableQuantity: -item.quantity } },
+    },
+  }));
+
+  // Clear cart
   cart.items = [];
-  await Promise.all([cart.save(), order.save()]);
+
+  await Promise.all([order.save(), cart.save(), Book.bulkWrite(bookUpdates)]);
+
   return order;
 };
 
@@ -169,7 +179,7 @@ const checkoutOrder = async (userId, orderId) => {
     payment.isPaid = true;
     await payment.save();
 
-    const order = await Order.findById(orderId).populate('shipping').populate('books.bookId');
+    const order = await Order.findById(orderId).populate('shipping');
 
     // Update order status
     order.status = orderStatuses.PAID;
@@ -177,15 +187,7 @@ const checkoutOrder = async (userId, orderId) => {
     // Update shipping status
     order.shipping.status = shippingStatuses.SHIPPED;
 
-    // Update books quantity
-    const bookUpdates = order.books.map((book) => ({
-      updateOne: {
-        filter: { _id: book.bookId._id },
-        update: { $inc: { quantity: -book.quantity } },
-      },
-    }));
-
-    await Book.bulkWrite(bookUpdates);
+    await order.save();
 
     return order;
   } catch (error) {
