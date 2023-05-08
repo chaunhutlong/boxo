@@ -46,10 +46,21 @@ const paginateBook = (schema) => {
           delete result.key;
           return result;
         });
-        return {
+
+        if (data.imageCover) {
+          const presignedUrl = getSignedUrl(bucket.IMAGES, data.imageCover.key);
+
+          data.imageCover = {
+            url: presignedUrl,
+          };
+        }
+
+        const result = {
           ...data.toObject(),
           images,
         };
+
+        return result;
       });
     }
 
