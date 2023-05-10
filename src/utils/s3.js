@@ -77,7 +77,7 @@ function uploadFileToS3(BUCKET) {
   return upload;
 }
 
-async function uploadImagesBase64(bucketName, parsedImages, fileName) {
+async function uploadImagesBase64(bucketName, parsedImages, fileName, accessType = 'private') {
   const { s3 } = awsS3Connection(bucketName);
 
   const uploadPromises = parsedImages.map((image, index) => {
@@ -89,6 +89,7 @@ async function uploadImagesBase64(bucketName, parsedImages, fileName) {
       Key: `${Date.now()}-${fileName}-${index}.${image.type.split('/')[1]}`,
       Body: pass,
       ContentType: image.type,
+      ACL: accessType,
     };
 
     return s3.upload(params).promise();
@@ -168,7 +169,7 @@ function getSignedUrl(BUCKET, key) {
   return s3.getSignedUrl('getObject', params);
 }
 
-function deleteFilessFromS3(BUCKET, keys) {
+function deleteFilesFromS3(BUCKET, keys) {
   const { s3 } = awsS3Connection(BUCKET);
 
   if (!Array.isArray(keys)) {
@@ -189,7 +190,7 @@ module.exports = {
   awsS3Connection,
   uploadFileToS3,
   getSignedUrl,
-  deleteFilessFromS3,
+  deleteFilesFromS3,
   uploadImagesBase64,
   uploadImagesMultipart,
 };

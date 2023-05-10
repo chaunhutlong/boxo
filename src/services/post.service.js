@@ -1,9 +1,9 @@
 const httpStatus = require('http-status');
 const { Post } = require('../models');
 const ApiError = require('../utils/ApiError');
+const { parseBase64ImagesList } = require('../utils/base64');
 const { getSignedUrl, deleteFilesFromS3, uploadImagesBase64 } = require('../utils/s3');
-
-const BUCKET = process.env.AWS_S3_IMAGE_BUCKET;
+const { bucket } = require('../config/s3.enum');
 
 /**
  * Create a post
@@ -12,27 +12,26 @@ const BUCKET = process.env.AWS_S3_IMAGE_BUCKET;
  */
 const createPost = async (currentUserId, postBody) => {
   // if content contain base64 image, upload to s3 and replace with url
-  const { title, content } = postBody;
+  const { title } = postBody;
+  let { content } = postBody;
   const author = currentUserId;
-  const regex = /data:image\/(png|jpg|jpeg);base64,(.*)/g;
-  let match = regex.exec(content);
+
+  // if content has base64 image, upload to s3 and replace with url
+  const parsedImages = parseBase64ImagesList(content);
+
   const images = [];
-  const index = 0;
-  while (match != null) {
-    let base64 = match[2];
-    const filename = `post_${author}_${index}.${imageType}`;
-    const url = uploadImagesBase64(BUCKET, base64, filename).then((uploadedImage) => {
-      return getSignedUrl(BUCKET, uploadedImage.Key);
-    });
+  if (parsedImages.length > 0) {
+    const uploadedImages = await uploadImagesBase64(bucket.IMAGES, parsedImages, `post-${author}`, 'public-read');
 
-    images.push({
-      url,
-      filename,
-    });
+    // Replace base64 images with URLs in the content
+    uploadedImages.forEach((uploadedImage, index) => {
+      const { Key, Location } = uploadedImage;
+      const { base64String } = parsedImages[index];
 
-    index += 1;
-    match = regex.exec(content);
-    console.log(match);
+      content = content.replace(base64String, Location);
+
+      images.push({ key: Key, url: Location });
+    });
   }
 
   const post = new Post({
