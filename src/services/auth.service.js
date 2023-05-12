@@ -1,9 +1,11 @@
 const httpStatus = require('http-status');
+const axios = require('axios');
 const tokenService = require('./token.service');
 const userService = require('./user.service');
 const Token = require('../models/token.model');
 const ApiError = require('../utils/ApiError');
 const { tokenTypes } = require('../config/tokens');
+const { profileService } = require('./profile.service');
 
 /**
  * Login with username and password
@@ -42,7 +44,7 @@ const refreshAuth = async (refreshToken) => {
     const refreshTokenDoc = await tokenService.verifyToken(refreshToken, tokenTypes.REFRESH);
     const user = await userService.getUserById(refreshTokenDoc.user);
     if (!user) {
-      throw new Error();
+      throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
     }
     await refreshTokenDoc.remove();
     return tokenService.generateAuthTokens(user);
@@ -81,7 +83,7 @@ const verifyEmail = async (verifyEmailToken) => {
     const verifyEmailTokenDoc = await tokenService.verifyToken(verifyEmailToken, tokenTypes.VERIFY_EMAIL);
     const user = await userService.getUserById(verifyEmailTokenDoc.user);
     if (!user) {
-      throw new Error();
+      throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
     }
     await Token.deleteMany({ user: user.id, type: tokenTypes.VERIFY_EMAIL });
     await userService.updateUserById(user.id, { isEmailVerified: true });
@@ -90,10 +92,35 @@ const verifyEmail = async (verifyEmailToken) => {
   }
 };
 
+const loginGoogle = async (accessToken) => {
+  const userInfoResponse = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo?alt=json', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  const { email, name, picture } = userInfoResponse.data;
+
+  const user = await userService.getUserByEmail(email);
+
+  if (!user) {
+    console.log('Creating new user', email, name);
+    const newUser = await userService.createUser({
+      email,
+      name,
+    });
+
+    await profileService.createOrUpdateProfile(newUser.id, picture, null);
+  }
+
+  return user;
+};
+
 module.exports = {
   loginUserWithEmailAndPassword,
   logout,
   refreshAuth,
   resetPassword,
   verifyEmail,
+  loginGoogle,
 };
