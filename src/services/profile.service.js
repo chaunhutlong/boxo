@@ -28,13 +28,13 @@ const createOrUpdateProfile = async (userId, avatar, profileBody) => {
       return profile;
     }
 
-    if (avatar && avatar.location.startsWith('https://')) {
+    if (avatar && avatar.location && avatar.location.startsWith('https://')) {
       profileBody.avatar = avatar.location;
       profileBody.avatarKey = avatar.key;
     } else if (avatar) {
-      const keyIndex = avatar.location.indexOf('=') + 1;
-      profileBody.avatar = avatar.location.substring(keyIndex);
-      profileBody.avatarKey = avatar.location;
+      const keyIndex = avatar.lastIndexOf('/');
+      profileBody.avatar = avatar;
+      profileBody.avatarKey = avatar.substring(keyIndex + 1);
     }
 
     return await Profile.create({ ...profileBody, userId });

@@ -5,7 +5,7 @@ const userService = require('./user.service');
 const Token = require('../models/token.model');
 const ApiError = require('../utils/ApiError');
 const { tokenTypes } = require('../config/tokens');
-const { profileService } = require('./profile.service');
+const { createOrUpdateProfile } = require('./profile.service');
 
 /**
  * Login with username and password
@@ -64,7 +64,7 @@ const resetPassword = async (resetPasswordToken, newPassword) => {
     const resetPasswordTokenDoc = await tokenService.verifyToken(resetPasswordToken, tokenTypes.RESET_PASSWORD);
     const user = await userService.getUserById(resetPasswordTokenDoc.user);
     if (!user) {
-      throw new Error();
+      throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
     }
     await userService.updateUserById(user.id, { password: newPassword });
     await Token.deleteMany({ user: user.id, type: tokenTypes.RESET_PASSWORD });
@@ -104,13 +104,13 @@ const loginGoogle = async (accessToken) => {
   const user = await userService.getUserByEmail(email);
 
   if (!user) {
-    console.log('Creating new user', email, name);
     const newUser = await userService.createUser({
       email,
       name,
     });
 
-    await profileService.createOrUpdateProfile(newUser.id, picture, null);
+    await createOrUpdateProfile(newUser.id, picture, {});
+    return newUser;
   }
 
   return user;
