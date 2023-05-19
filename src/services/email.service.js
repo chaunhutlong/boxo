@@ -27,15 +27,28 @@ const sendEmail = async (to, subject, text) => {
  * Send reset password email
  * @param {string} to
  * @param {string} token
+ * @param {string} userName
  * @returns {Promise}
  */
-const sendResetPasswordEmail = async (to, token) => {
-  const subject = 'Reset password';
-  // replace this url with the link to the reset password page of your front-end app
-  const resetPasswordUrl = `http://link-to-app/reset-password?token=${token}`;
-  const text = `Dear user,
-To reset your password, click on this link: ${resetPasswordUrl}
-If you did not request any password resets, then ignore this email.`;
+const sendResetPasswordEmail = async (to, token, userName) => {
+  const subject = 'Boxo - Đặt lại mật khẩu';
+  // Replace process.env.FRONTEND_URL with the environment variable that contains the frontend URL
+  const resetPasswordUrl = `${
+    process.env.FRONTEND_URL ? process.env.FRONTEND_URL : 'http://localhost:3002'
+  }/reset-password?token=${token}`;
+  const text = `Chào ${userName},
+
+  Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản Boxo, một ứng dụng web chuyên về việc bán sách. Để tiếp tục quá trình đặt lại mật khẩu, vui lòng nhấp vào liên kết sau đây:
+
+${resetPasswordUrl}
+
+Nếu bạn không thực hiện yêu cầu đặt lại mật khẩu này, bạn có thể bỏ qua email này một cách an toàn. Xin lưu ý rằng việc bảo mật tài khoản của bạn là rất quan trọng đối với chúng tôi và chúng tôi khuyến nghị giữ kín thông tin đăng nhập của bạn.
+
+Nếu bạn cần bất kỳ hỗ trợ hoặc có bất kỳ câu hỏi nào, xin vui lòng liên hệ với đội ngũ hỗ trợ của chúng tôi.
+
+Trân trọng,
+Đội ngũ Boxo`;
+
   await sendEmail(to, subject, text);
 };
 
