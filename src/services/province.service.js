@@ -5,8 +5,7 @@ const { City, Province } = require('../models');
  * @returns {Promise<Province>}
  */
 const getProvinces = async () => {
-  const provinces = await Province.find();
-  return provinces;
+  return Province.find();
 };
 
 /**
@@ -15,8 +14,7 @@ const getProvinces = async () => {
  * @returns {Promise<City>}
  */
 const getCitiesByProvinceId = async (provinceId) => {
-  const cities = await City.find({ provinceId });
-  return cities;
+  return City.find({ provinceId });
 };
 
 module.exports = {

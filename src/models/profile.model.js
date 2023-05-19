@@ -8,6 +8,10 @@ const profileSchema = mongoose.Schema({
   avatar: {
     type: String,
   },
+  avatarKey: {
+    type: String,
+    private: true,
+  },
   addresses: [
     {
       type: mongoose.SchemaTypes.ObjectId,
