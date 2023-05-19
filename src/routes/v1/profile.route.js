@@ -3,12 +3,19 @@ const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
 const profileValidation = require('../../validations/profile.validation');
 const profileController = require('../../controllers/profile.controller');
+const { uploadFileToS3 } = require('../../utils/s3');
+const { bucket } = require('../../config/s3.enum');
 
 const router = express.Router();
 
 router
   .route('/')
-  .post(auth(), validate(profileValidation.createOrUpdateProfile), profileController.createOrUpdateProfile)
+  .post(
+    auth(),
+    uploadFileToS3(bucket.AVATAR).single('avatar'),
+    validate(profileValidation.createOrUpdateProfile),
+    profileController.createOrUpdateProfile
+  )
   .get(auth(), profileController.getProfileByUserId);
 
 router.put('/password', auth(), validate(profileValidation.updatePassword), profileController.updatePassword);

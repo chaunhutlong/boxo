@@ -7,10 +7,9 @@ const { bucket } = require('../config/s3.enum');
 
 async function uploadBookImages(parsedImages, bookId) {
   try {
-    const bookImages = await uploadImagesBase64(bucket.IMAGES, parsedImages, `book-${bookId}`);
-    return bookImages;
+    return await uploadImagesBase64(bucket.IMAGES, parsedImages, `book-${bookId}`);
   } catch (err) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, err.message);
+    throw new ApiError(err.statusCode || httpStatus.INTERNAL_SERVER_ERROR, err.message);
   }
 }
 
@@ -21,34 +20,30 @@ async function uploadBookImages(parsedImages, bookId) {
  * @returns {Promise<Book>}
  */
 const createBook = async (bookBody, base64ImagesString) => {
-  try {
-    if (await Book.isNameTaken(bookBody.name)) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Name already taken');
-    }
-
-    const book = new Book(bookBody);
-
-    let parsedImages = [];
-    if (base64ImagesString) {
-      const base64ImagesArray = Array.isArray(base64ImagesString) ? base64ImagesString : [base64ImagesString];
-      parsedImages = base64ImagesArray.map(parseBase64Image);
-
-      const uploadedImages = await uploadBookImages(parsedImages, book._id);
-
-      book.images = uploadedImages.map(({ Key, Location }) => ({ key: Key, url: Location }));
-    }
-
-    // if don't have the imageCover, get the first image
-    if (!book.imageCover && book.images.length > 0) {
-      [book.imageCover] = book.images;
-    }
-
-    await book.save();
-
-    return book;
-  } catch (error) {
-    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message);
+  if (await Book.isNameTaken(bookBody.name)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Name already taken');
   }
+
+  // if you don't have the imageCover, get the first image
+  if (!bookBody.imageCover && bookBody.images.length > 0) {
+    [bookBody.imageCover] = bookBody.images;
+  }
+
+  const book = new Book(bookBody);
+
+  let parsedImages = [];
+  if (base64ImagesString) {
+    const base64ImagesArray = Array.isArray(base64ImagesString) ? base64ImagesString : [base64ImagesString];
+    parsedImages = base64ImagesArray.map(parseBase64Image);
+
+    const uploadedImages = await uploadBookImages(parsedImages, book._id);
+
+    book.images = uploadedImages.map(({ Key, Location }) => ({ key: Key, url: Location }));
+  }
+
+  await book.save();
+
+  return book;
 };
 
 /**
@@ -61,9 +56,7 @@ const createBook = async (bookBody, base64ImagesString) => {
  * @returns {Promise<QueryResult>}
  */
 const queryBooks = async (filter, options) => {
-  const books = await Book.paginate(filter, options);
-
-  return books;
+  return Book.paginate(filter, options);
 };
 
 /**
@@ -89,49 +82,43 @@ const getBookById = async (id) => {
 /**
  * Update book by id
  * @param {ObjectId} bookId
- * @param {Object} updateBody
+ * @param {Object} bookBody
  * @param {string|string[]} base64ImagesString
  * @returns {Promise<Book>}
  */
 const updateBookById = async (bookId, bookBody, base64ImagesString) => {
-  try {
-    const book = await Book.findById(bookId);
+  const book = await Book.findById(bookId);
 
-    if (!book) {
-      throw new ApiError(httpStatus.NOT_FOUND, 'Book not found');
-    }
-
-    if (bookBody.name && (await Book.isNameTaken(bookBody.name, bookId))) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Name already taken');
-    }
-
-    Object.assign(book, bookBody);
-
-    if (base64ImagesString) {
-      const base64ImagesArray = Array.isArray(base64ImagesString) ? base64ImagesString : [base64ImagesString];
-
-      // if bookImageArray has link, that not do anything
-      if (base64ImagesArray[0].startsWith('http')) {
-        await book.save();
-        return book;
-      }
-
-      // if base64ImageString is base64 string, delete old images and upload new images
-
-      const parsedImages = base64ImagesArray.map((base64Image) => parseBase64Image(base64Image));
-
-      Object.keys(book.images).forEach(async (key) => {
-        await deleteFilesFromS3(bucket.IMAGES, book.images[key].key);
-      });
-
-      const uploads = await uploadBookImages(parsedImages, book._id);
-      book.images = uploads.map(({ Key, Location }) => ({ key: Key, url: Location }));
-    }
-
-    return book;
-  } catch (error) {
-    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message);
+  if (!book) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Book not found');
   }
+
+  if (bookBody.name && (await Book.isNameTaken(bookBody.name, bookId))) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Name already taken');
+  }
+
+  Object.assign(book, bookBody);
+
+  if (base64ImagesString) {
+    const base64ImagesArray = Array.isArray(base64ImagesString) ? base64ImagesString : [base64ImagesString];
+
+    // if bookImageArray has link, that not do anything
+    if (base64ImagesArray[0].startsWith('http')) {
+      await book.save();
+      return book;
+    }
+
+    // if base64ImageString is base64 string, delete old images and upload new images
+
+    const parsedImages = base64ImagesArray.map((base64Image) => parseBase64Image(base64Image));
+
+    await Promise.all(Object.keys(book.images).map((key) => deleteFilesFromS3(bucket.IMAGES, book.images[key].key)));
+
+    const uploads = await uploadBookImages(parsedImages, book._id);
+    book.images = uploads.map(({ Key, Location }) => ({ key: Key, url: Location }));
+  }
+
+  return book;
 };
 
 /**
@@ -142,9 +129,7 @@ const updateBookById = async (bookId, bookBody, base64ImagesString) => {
 const deleteBookById = async (bookId) => {
   const book = await Book.findById(bookId).populate('images');
 
-  Object.keys(book.images).forEach(async (key) => {
-    await deleteFilesFromS3(bucket.IMAGES, book.images[key].key);
-  });
+  await Promise.all(Object.keys(book.images).map((key) => deleteFilesFromS3(bucket.IMAGES, book.images[key].key)));
 
   await book.remove();
 };
