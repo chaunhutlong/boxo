@@ -1,31 +1,43 @@
+/**
+ * Parse base64 image
+ * @param {string} dataString
+ * @returns {{data: Buffer, type: *}[]|{error: string}}
+ */
 const parseBase64Image = (dataString) => {
-  const matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+  const [, type, data] = dataString.match(/^data:([A-Za-z-+/]+);base64,([^,]+)$/);
 
-  const response = {};
-
-  if (matches.length !== 3) {
+  if (!type || !data) {
     return { error: 'Invalid input string' };
   }
-  response.base64String = matches[0];
-  response.type = matches[1];
-  response.data = Buffer.from(matches[2], 'base64');
 
-  return response;
+  return {
+    type,
+    data: Buffer.from(data, 'base64'),
+  };
 };
 
-const parseBase64ImagesList = (dataString) => {
-  const matches = dataString.match(/data:([A-Za-z-+\/]+);base64,(.+)$/gm);
+/**
+ * Parse base64 images array
+ * @param {string} dataString
+ * @returns {{data: Buffer, type: *}[]|{error: string}}
+ */
+const parseBase64ImagesArray = (dataString) => {
+  const regex = /data:([a-zA-Z0-9]+\/[a-zA-Z0-9-+.]+);base64,([^"]+)/g;
 
-  console.log(matches);
+  const matches = Array.from(dataString.matchAll(regex), (match) => ({
+    input: match[0],
+    type: match[1],
+    data: Buffer.from(match[2], 'base64'),
+  }));
 
-  if (!matches || matches.length === 0) {
-    return [];
+  if (!matches.length) {
+    return { error: 'Invalid input string' };
   }
 
-  return matches.map(parseBase64Image);
+  return matches;
 };
 
 module.exports = {
   parseBase64Image,
-  parseBase64ImagesList,
+  parseBase64ImagesArray,
 };
