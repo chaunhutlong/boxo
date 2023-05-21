@@ -59,7 +59,7 @@ const createPost = async (currentUserId, postBody) => {
   const { title, content } = postBody;
   const authorId = currentUserId;
 
-  const { parsedContent, images } = _parseAndUploadBase64ImagesToS3(authorId, content);
+  const { parsedContent, images } = await _parseAndUploadBase64ImagesToS3(authorId, content);
 
   const post = new Post({
     title,
@@ -112,7 +112,7 @@ const updatePostById = async (postId, updateBody) => {
     );
   }
 
-  const { parsedContent, images } = _parseAndUploadBase64ImagesToS3(post.author, content);
+  const { parsedContent, images } = await _parseAndUploadBase64ImagesToS3(post.author, content);
 
   post.title = title;
   post.content = parsedContent;
