@@ -34,10 +34,6 @@ const createBook = async (bookBody, base64ImagesString) => {
     const uploadedImages = await uploadBookImages(parsedImages, book._id);
 
     book.images = uploadedImages.map(({ Key, Location }) => ({ key: Key, url: Location }));
-
-    if (!bookBody.imageCover && book.images.length > 0) {
-      [book.imageCover] = book.images;
-    }
   }
 
   await book.save();

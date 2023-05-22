@@ -14,13 +14,12 @@ const { bucket } = require('../../config/s3.enum');
  */
 /**
  * Query for documents with pagination
- * @param {Object} [filter] - Mongo filter
- * @param {Object} [options] - Query options
  * @param {string} [options.sortBy] - Sorting criteria using the format: sortField:(desc|asc). Multiple sorting criteria should be separated by commas (,)
  * @param {string} [options.populate] - Populate data fields. Hierarchy of fields should be separated by (.). Multiple populating criteria should be separated by commas (,)
  * @param {number} [options.limit] - Maximum number of results per page (default = 10)
  * @param {number} [options.page] - Current page (default = 1)
  * @returns {Promise<QueryResult>}
+ * @param schema
  */
 
 const paginateBook = (schema) => {
@@ -47,32 +46,20 @@ const paginateBook = (schema) => {
           return result;
         });
 
-        if (data.imageCover) {
-          const presignedUrl = getSignedUrl(bucket.IMAGES, data.imageCover.key);
-
-          data.imageCover = {
-            url: presignedUrl,
-          };
-        }
-
-        const result = {
+        return {
           ...data.toObject(),
           images,
         };
-
-        return result;
       });
     }
 
-    const result = {
+    return {
       datas,
       page,
       limit,
       totalPages,
       totalResults,
     };
-
-    return result;
   };
 };
 

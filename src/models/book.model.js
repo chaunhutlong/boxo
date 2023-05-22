@@ -65,9 +65,6 @@ const bookSchema = mongoose.Schema(
       ref: 'Publisher',
       required: true,
     },
-    imageCover: {
-      type: imageSchema,
-    },
     images: [imageSchema],
     authors: [
       {
