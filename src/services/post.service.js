@@ -1,5 +1,6 @@
 const httpStatus = require('http-status');
 const _ = require('lodash');
+const he = require('he');
 const { Post } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { parseBase64ImagesArray } = require('../utils/base64');
@@ -32,6 +33,9 @@ const _parseAndUploadBase64ImagesToS3 = async (authorId, content) => {
       images.push({ key: Key, url: Location });
     });
   }
+
+  // Convert HTML entities back to characters
+  parsedContent = he.decode(parsedContent);
 
   return { parsedContent, images };
 };
@@ -100,23 +104,30 @@ const updatePostById = async (postId, updateBody) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Post not found');
   }
 
-  const { title, oldImageKeys, content } = updateBody;
+  const { title, content } = updateBody;
 
-  // oldImageKeys is an array of image keys that not to be deleted
-  const oldImages = post.images.filter((image) => !oldImageKeys.includes(image.key));
+  // Filter out the images that are no longer present in the updated content
+  const imageKeysToDelete = [];
+  post.images = post.images.filter((image) => {
+    if (!content.includes(image.url)) {
+      imageKeysToDelete.push(image.key);
+      return false;
+    }
+    return true;
+  });
 
-  if (oldImages.length > 0) {
-    await deleteFilesFromS3(
-      bucket.IMAGES,
-      oldImages.map((image) => image.key)
-    );
+  // Delete images from S3
+  if (imageKeysToDelete.length > 0) {
+    await deleteFilesFromS3(bucket.IMAGES, imageKeysToDelete);
   }
 
   const { parsedContent, images } = await _parseAndUploadBase64ImagesToS3(post.author, content);
 
   post.title = title;
   post.content = parsedContent;
-  post.images = [...oldImages, ...images];
+
+  // Combine the existing and new images
+  post.images.push(...images);
 
   await post.save();
   return post;

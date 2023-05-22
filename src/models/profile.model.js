@@ -18,7 +18,7 @@ const profileSchema = mongoose.Schema({
       ref: 'Address',
     },
   ],
-  userId: {
+  user: {
     type: mongoose.SchemaTypes.ObjectId,
     ref: 'User',
     required: true,

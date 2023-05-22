@@ -32,7 +32,6 @@ const updatePost = {
     .keys({
       title: Joi.string(),
       content: Joi.string(),
-      oldImageKeys: Joi.array().items(Joi.string()),
     })
     .min(1),
 };
