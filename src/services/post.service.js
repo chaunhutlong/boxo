@@ -104,7 +104,9 @@ const updatePostById = async (postId, updateBody) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Post not found');
   }
 
-  const { title, content } = updateBody;
+  const { title } = updateBody;
+  let { content } = updateBody;
+  content = he.decode(content);
 
   // Filter out the images that are no longer present in the updated content
   const imageKeysToDelete = [];
