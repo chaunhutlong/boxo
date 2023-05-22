@@ -12,4 +12,8 @@ RUN yarn install --pure-lockfile
 
 COPY --chown=node:node . .
 
-EXPOSE 3000
+RUN sed -i 's/pidusage(pids, function retPidUsage(err, statistics) {/pidusage(pids, { usePs: true }, function retPidUsage(err, statistics) {/g' node_modules/pm2/lib/God/Methods.js
+
+EXPOSE 3001
+
+CMD ["yarn", "start"]
