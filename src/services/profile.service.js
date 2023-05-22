@@ -13,13 +13,15 @@ const { bucket } = require('../config/s3.enum');
  */
 const createOrUpdateProfile = async (userId, avatar, profileBody) => {
   try {
-    const profile = await Profile.findOne({ userId });
+    const profile = await Profile.findOne({ user: userId });
 
     if (profile) {
       Object.assign(profile, profileBody);
 
       if (avatar) {
-        await deleteFilesFromS3(bucket.AVATAR, profile.avatarKey);
+        if (profile.avatarKey) {
+          await deleteFilesFromS3(bucket.AVATAR, profile.avatarKey);
+        }
         profile.avatar = avatar.location;
         profile.avatarKey = avatar.key;
       }
@@ -37,7 +39,7 @@ const createOrUpdateProfile = async (userId, avatar, profileBody) => {
       profileBody.avatarKey = avatar.substring(keyIndex + 1);
     }
 
-    return await Profile.create({ ...profileBody, userId });
+    return await Profile.create({ ...profileBody, user: userId });
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
   }
@@ -49,7 +51,7 @@ const createOrUpdateProfile = async (userId, avatar, profileBody) => {
  * @param userId
  */
 const getProfileByUserId = async (userId) => {
-  const profile = await Profile.findOne({ userId }).populate('user');
+  const profile = await Profile.findOne({ user: userId }).populate('user');
   if (!profile) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Profile not found');
   }

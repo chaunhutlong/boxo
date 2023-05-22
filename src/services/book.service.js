@@ -24,11 +24,6 @@ const createBook = async (bookBody, base64ImagesString) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Name already taken');
   }
 
-  // if you don't have the imageCover, get the first image
-  if (!bookBody.imageCover && bookBody.images.length > 0) {
-    [bookBody.imageCover] = bookBody.images;
-  }
-
   const book = new Book(bookBody);
 
   let parsedImages = [];
