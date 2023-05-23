@@ -24,32 +24,43 @@ const { bucket } = require('../../config/s3.enum');
 
 const paginateBook = (schema) => {
   schema.statics.paginate = async function (filter, options) {
+    const { query, search } = filter;
+
+    // Apply text search if a search query is provided
+    const textSearchQuery = search ? { $text: { $search: search } } : {};
+
+    // Merge the text search query with the filter query
+    const combinedFilter = { ...query, ...textSearchQuery };
+
     const sort = options.sortBy ? createSortingCriteria(options.sortBy) : 'createdAt';
     const limit = getLimit(options.limit);
     const page = getPage(options.page);
     const skip = getSkip(page, limit);
 
-    const totalResults = await getCount(this, filter);
-    let datas = await getDocs(this, filter, sort, skip, limit, options.populate);
+    const totalResults = await getCount(this, combinedFilter);
+    let datas = await getDocs(this, combinedFilter, sort, skip, limit, options.populate);
 
     const totalPages = Math.ceil(totalResults / limit);
 
     if (datas.length) {
       datas = datas.map((data) => {
-        const images = data.images.map((image) => {
-          const presignedUrl = getSignedUrl(bucket.IMAGES, image.key);
-          const result = {
-            ...image.toObject(),
-            url: presignedUrl,
-          };
-          delete result.key;
-          return result;
-        });
+        if (datas.images && datas.images.length > 0) {
+          const images = data.images.map((image) => {
+            const presignedUrl = getSignedUrl(bucket.IMAGES, image.key);
+            const result = {
+              ...image.toObject(),
+              url: presignedUrl,
+            };
+            delete result.key;
+            return result;
+          });
 
-        return {
-          ...data.toObject(),
-          images,
-        };
+          return {
+            ...data.toObject(),
+            images,
+          };
+        }
+        return data;
       });
     }
 
