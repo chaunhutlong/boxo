@@ -42,7 +42,7 @@ const addToCart = async (userId, addToCartData) => {
         name: book.name,
         price: book.price,
         priceDiscount: book.priceDiscount,
-        imageUrl: getSignedUrl(bucket.IMAGES, book.imageCover.key),
+        imageUrl: getSignedUrl(bucket.IMAGES, book.images[0].key),
         quantity: addToCartData.quantity,
         totalPrice: book.priceDiscount ? book.priceDiscount * addToCartData.quantity : book.price * addToCartData.quantity,
       });
