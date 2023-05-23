@@ -9,7 +9,7 @@ const router = express.Router();
 router
   .route('/')
   .post(auth(), validate(addressValidation.createAddress), addressController.createAddress)
-  .get(auth(), validate(addressValidation.getAddresses), addressController.getAddresss);
+  .get(auth(), validate(addressValidation.getAddresses), addressController.queryAddresses);
 
 router
   .route('/:addressId')
@@ -22,17 +22,17 @@ module.exports = router;
 /**
  * @swagger
  * tags:
- *   name: Addresss
+ *   name: Addresses
  *   description: Address management and retrieval
  */
 
 /**
  * @swagger
- * /addresss:
+ * /addresses:
  *   post:
- *     summary: Create a address
- *     description: Logged in addresss can create only their own addresss
- *     tags: [Addresss]
+ *     summary: Create an address
+ *     description: Logged in addresses can create only their own addresses
+ *     tags: [Addresses]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -70,14 +70,14 @@ module.exports = router;
  *       "400":
  *         $ref: '#/components/responses/BadRequest'
  *       "401":
- *         $ref: '#/components/responses/Unaddressized'
+ *         $ref: '#/components/responses/Unauthorized'
  *       "403":
  *         $ref: '#/components/responses/Forbidden'
  *
  *   get:
- *     summary: Get all addresss
- *     description: Anyone can retrieve all addresss.
- *     tags: [Addresss]
+ *     summary: Get all addresses
+ *     description: Anyone can retrieve all addresses.
+ *     tags: [Addresses]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -92,7 +92,7 @@ module.exports = router;
  *           type: integer
  *           minimum: 1
  *         default: 10
- *         description: Maximum number of addresss
+ *         description: Maximum number of addresses
  *       - in: query
  *         name: page
  *         schema:
@@ -125,18 +125,18 @@ module.exports = router;
  *                   type: integer
  *                   example: 1
  *       "401":
- *         $ref: '#/components/responses/Unaddressized'
+ *         $ref: '#/components/responses/Unauthorized'
  *       "403":
  *         $ref: '#/components/responses/Forbidden'
  */
 
 /**
  * @swagger
- * /addresss/{id}:
+ * /addresses/{id}:
  *   get:
- *     summary: Get a address
- *     description: Anyone can retrieve a address.
- *     tags: [Addresss]
+ *     summary: Get an address
+ *     description: Anyone can retrieve an address.
+ *     tags: [Addresses]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -154,16 +154,16 @@ module.exports = router;
  *             schema:
  *                $ref: '#/components/schemas/Address'
  *       "401":
- *         $ref: '#/components/responses/Unaddressized'
+ *         $ref: '#/components/responses/Unauthorized'
  *       "403":
  *         $ref: '#/components/responses/Forbidden'
  *       "404":
  *         $ref: '#/components/responses/NotFound'
  *
  *   put:
- *     summary: Update a address
- *     description: Admins and Managers can update other addresss.
- *     tags: [Addresss]
+ *     summary: Update an address
+ *     description: Admins and Managers can update other addresses.
+ *     tags: [Addresses]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -205,16 +205,16 @@ module.exports = router;
  *       "400":
  *         $ref: '#/components/responses/BadRequest'
  *       "401":
- *         $ref: '#/components/responses/Unaddressized'
+ *         $ref: '#/components/responses/Unauthorized'
  *       "403":
  *         $ref: '#/components/responses/Forbidden'
  *       "404":
  *         $ref: '#/components/responses/NotFound'
  *
  *   delete:
- *     summary: Delete a address
- *     description: Admins and Managers can delete other addresss.
- *     tags: [Addresss]
+ *     summary: Delete an address
+ *     description: Admins and Managers can delete other addresses.
+ *     tags: [Addresses]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -228,7 +228,7 @@ module.exports = router;
  *       "200":
  *         description: No content
  *       "401":
- *         $ref: '#/components/responses/Unaddressized'
+ *         $ref: '#/components/responses/Unauthorized'
  *       "403":
  *         $ref: '#/components/responses/Forbidden'
  *       "404":

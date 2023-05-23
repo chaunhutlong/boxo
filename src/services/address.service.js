@@ -3,7 +3,7 @@ const { Address, City } = require('../models');
 const ApiError = require('../utils/ApiError');
 
 /**
- * Create a address
+ * Create an address
  * @param {ObjectId} userId
  * @param {Object} addressBody
  * @returns {Promise<Address>}
@@ -33,17 +33,11 @@ const createAddress = async (userId, addressBody) => {
 };
 
 /**
- * Query for addresss
- * @param {Object} filter - Mongo filter
- * @param {Object} options - Query options
- * @param {string} [options.sortBy] - Sort option in the format: sortField:(desc|asc)
- * @param {number} [options.limit] - Maximum number of results per page (default = 10)
- * @param {number} [options.page] - Current page (default = 1)
+ * Get all addresses
  * @returns {Promise<QueryResult>}
  */
-const queryAddresss = async (filter, options) => {
-  const addresss = await Address.paginate(filter, options);
-  return addresss;
+const queryAddresses = async () => {
+  return Address.find().populate('cityId');
 };
 
 /**
@@ -94,7 +88,7 @@ const deleteAddressById = async (addressId) => {
 
 module.exports = {
   createAddress,
-  queryAddresss,
+  queryAddresses,
   getAddressById,
   updateAddressById,
   deleteAddressById,
