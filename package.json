@@ -11,7 +11,6 @@
     "node": ">=12.0.0"
   },
   "scripts": {
-    "postinstall": "patch-package",
     "build:digitalocean": "yarn install --production=false && yarn run build && rm -rf node_modules && yarn install --production --frozen-lockfile",
     "start": "pm2 start ecosystem.config.json --no-daemon",
     "dev": "cross-env NODE_ENV=development nodemon src/index.js",
@@ -74,14 +73,14 @@
     "openapi-types": "12.1.1",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
-    "patch-package": "^7.0.0",
     "pm2": "^5.3.0",
-    "postinstall-postinstall": "^2.1.0",
     "sequelize": "^6.28.0",
     "socket.io": "^4.6.1",
+    "socket.io-adapter": "^2.5.2",
     "soft-delete-plugin-mongoose": "^1.0.15",
     "swagger-jsdoc": "^6.0.8",
     "swagger-ui-express": "^4.1.6",
+    "uuid": "^9.0.0",
     "validator": "^13.0.0",
     "winston": "^3.2.1",
     "xss-clean": "^0.1.1"
@@ -95,7 +94,6 @@
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-prettier": "^3.1.1",
     "eslint-plugin-security": "^1.4.0",
-    "faker": "^5.1.0",
     "husky": "^7.0.0",
     "lint-staged": "^11.0.0",
     "multer": "^1.4.5-lts.1",
