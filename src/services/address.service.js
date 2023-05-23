@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { Address, City } = require('../models');
+const { Address, City, Shipping } = require('../models');
 const ApiError = require('../utils/ApiError');
 
 /**
@@ -56,7 +56,8 @@ const getAddressById = async (id) => {
 /**
  * Update address by id
  * @param {ObjectId} addressId
- * @param {Object} updateBody
+ * @param {ObjectId} userId
+ * @param {Object} addressBody
  * @returns {Promise<Address>}
  */
 const updateAddressById = async (addressId, userId, addressBody) => {
@@ -86,10 +87,25 @@ const deleteAddressById = async (addressId) => {
   await address.remove();
 };
 
+/**
+ * Calculate shipping fee
+ * @param {ObjectId} userId
+ */
+const calculateShippingCost = async (userId) => {
+  const address = await Address.findOne({ userId, isDefault: true });
+
+  if (!address) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Address not found');
+  }
+
+  return Shipping.calculateShippingValue(address.distance);
+};
+
 module.exports = {
   createAddress,
   queryAddresses,
   getAddressById,
   updateAddressById,
   deleteAddressById,
+  calculateShippingCost,
 };

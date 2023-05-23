@@ -11,6 +11,8 @@ router
   .post(auth(), validate(addressValidation.createAddress), addressController.createAddress)
   .get(auth(), validate(addressValidation.getAddresses), addressController.queryAddresses);
 
+router.route('/shipping-cost').get(auth(), addressController.getShippingCost);
+
 router
   .route('/:addressId')
   .get(auth(), validate(addressValidation.getAddress), addressController.getAddress)

@@ -28,10 +28,16 @@ const deleteAddress = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const getShippingCost = catchAsync(async (req, res) => {
+  const value = await addressService.calculateShippingCost(req.user.id);
+  res.status(httpStatus.OK).send({ value });
+});
+
 module.exports = {
   createAddress,
   queryAddresses,
   getAddress,
   updateAddress,
   deleteAddress,
+  getShippingCost,
 };
