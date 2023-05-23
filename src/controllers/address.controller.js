@@ -8,7 +8,7 @@ const createAddress = catchAsync(async (req, res) => {
 });
 
 const queryAddresses = catchAsync(async (req, res) => {
-  const result = await addressService.queryAddresses();
+  const result = await addressService.queryAddresses(req.user.id);
   res.send(result);
 });
 

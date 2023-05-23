@@ -34,10 +34,11 @@ const createAddress = async (userId, addressBody) => {
 
 /**
  * Get all addresses
+ * @param {ObjectId} userId
  * @returns {Promise<QueryResult>}
  */
-const queryAddresses = async () => {
-  return Address.find().populate('cityId');
+const queryAddresses = async (userId) => {
+  return Address.find({ userId }).populate('cityId');
 };
 
 /**
