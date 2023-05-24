@@ -3,16 +3,16 @@ const { objectId } = require('./custom.validation');
 
 const createReview = {
     body: Joi.object().keys({
-        title: Joi.string().required(),
-        content: Joi.string().required(),
-        rating: Joi.number().required(),
-        productId: Joi.string().required()
+        bookId: Joi.string().custom(objectId),
+        userId: Joi.string().custom(objectId),
+        rating: Joi.number().min(1).max(5).required(),
+        comment: Joi.string().required(),
     })
 }
 
 const getReviews = {
     query: Joi.object().keys({
-        productId: Joi.string().required()
+        bookId: Joi.string().required()
     })
 }
 
@@ -27,10 +27,9 @@ const updateReview = {
         reviewId: Joi.string().required()
     }),
     body: Joi.object().keys({
-        title: Joi.string(),
-        content: Joi.string(),
+        comment: Joi.string(),
         rating: Joi.number()
-    })
+    }).min(1),
 }
 
 const deleteReview = {

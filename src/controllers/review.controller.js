@@ -10,8 +10,9 @@ const createReview = catchAsync(async (req, res) => {
 );
 
 const getReviews = catchAsync(async (req, res) => {
-    const filter = pick(req.query, ['productId']);
+    const filter = pick(req.query, ['bookId']);
     const options = pick(req.query, ['sortBy', 'limit', 'page']);
+    options.populate = 'user';
     const result = await reviewService.queryReviews(filter, options);
     res.send(result);
 }
@@ -19,7 +20,6 @@ const getReviews = catchAsync(async (req, res) => {
 
 const getReview = catchAsync(async (req, res) => {
     const review = await reviewService.getReviewById(req.params.reviewId);
-
     res.send(review);
 }
 );

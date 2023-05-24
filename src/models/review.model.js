@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
-const { toJSON } = require('./plugins');
+const { toJSON, paginate } = require('./plugins');
 
 const reviewSchema = mongoose.Schema(
   {
-    book: {
+    bookId: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'Book',
       required: true,
@@ -28,6 +28,7 @@ const reviewSchema = mongoose.Schema(
 
 // add plugin that converts mongoose to json
 reviewSchema.plugin(toJSON);
+reviewSchema.plugin(paginate);
 
 /**
  * @typedef Review
