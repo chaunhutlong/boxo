@@ -14,6 +14,10 @@ const findCartItemByBookId = (cartItems, bookId) => {
   return cartItems.find((item) => item.bookId.toString() === bookId);
 };
 
+const createCart = async (userId) => {
+  return Cart.create({ userId });
+};
+
 const addToCart = async (userId, addToCartData) => {
   try {
     let cart = await Cart.findOne({ userId });
@@ -151,6 +155,7 @@ const updateAllCartItemsCheckStatus = async (userId, bookBody) => {
 };
 
 module.exports = {
+  createCart,
   addToCart,
   getCart,
   updateCart,
