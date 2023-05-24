@@ -11,8 +11,7 @@ const createGenre = async (genreBody) => {
   if (await Genre.isNameTaken(genreBody.name)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Name already taken');
   }
-  const genre = await Genre.create(genreBody);
-  return genre;
+  return Genre.create(genreBody);
 };
 
 /**
@@ -25,8 +24,7 @@ const createGenre = async (genreBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryGenres = async (filter, options) => {
-  const genres = await Genre.paginate(filter, options);
-  return genres;
+  return Genre.paginate(filter, options);
 };
 
 /**

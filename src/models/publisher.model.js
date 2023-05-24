@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const Book = require('./book.model');
 const { toJSON, paginate, deleteRelatedDocuments } = require('./plugins');
 
 const publisherSchema = mongoose.Schema({
@@ -15,7 +14,7 @@ const publisherSchema = mongoose.Schema({
     maxLength: 12,
 
     validate: {
-      validator: function (v) {
+      validator(v) {
         return /^\d+$/.test(v);
       },
     },

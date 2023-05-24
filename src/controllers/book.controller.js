@@ -10,7 +10,7 @@ const createBook = catchAsync(async (req, res) => {
 });
 
 const getBooks = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['genres']);
+  const filter = pick(req.query, ['query', 'search']);
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
   options.populate = 'authors,genres,publisher';
 
@@ -35,10 +35,23 @@ const deleteBook = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const getBookByISBN = catchAsync(async (req, res) => {
+  const book = await bookService.getBookByISBN(req.params.isbn);
+  res.send(book);
+});
+
+const crawlBook = catchAsync(async (req, res) => {
+  const { query } = req.body;
+  const book = await bookService.crawlBook(query);
+  res.send(book);
+});
+
 module.exports = {
   createBook,
   getBooks,
   getBook,
   updateBook,
   deleteBook,
+  getBookByISBN,
+  crawlBook,
 };

@@ -1,57 +1,59 @@
 const httpStatus = require('http-status');
 const { Profile, User } = require('../models');
-const { getSignedUrl, deleteFilesFromS3FromS3 } = require('../utils/s3');
+const { deleteFilesFromS3 } = require('../utils/s3');
 const ApiError = require('../utils/ApiError');
+const { bucket } = require('../config/s3.enum');
 
-const BUCKET = process.env.AWS_S3_AVATAR_BUCKET;
 /**
  * Create a profile
  * @param {Object} profileBody
  * @param {ObjectId} userId
+ * @param avatar
  * @returns {Promise<Profile>}
  */
 const createOrUpdateProfile = async (userId, avatar, profileBody) => {
   try {
-    const profile = await Profile.findOne({ userId });
+    const profile = await Profile.findOne({ user: userId });
+
     if (profile) {
       Object.assign(profile, profileBody);
-      // TODO: remove old avatar from s3
+
       if (avatar) {
-        await deleteFilesFromS3FromS3(BUCKET, profile.avatar);
-        profile.avatar = avatar.key;
+        if (profile.avatarKey) {
+          await deleteFilesFromS3(bucket.AVATAR, profile.avatarKey);
+        }
+        profile.avatar = avatar.location;
+        profile.avatarKey = avatar.key;
       }
 
       await profile.save();
       return profile;
     }
-    const newProfile = await Profile.create({
-      ...profileBody,
-      userId,
-      avatar: avatar ? avatar.key : null,
-    });
 
-    return newProfile;
-  } catch (error) {
-    if (avatar) {
-      await deleteFilesFromS3FromS3(BUCKET, avatar.key);
+    if (avatar && avatar.location && avatar.location.startsWith('https://')) {
+      profileBody.avatar = avatar.location;
+      profileBody.avatarKey = avatar.key;
+    } else if (avatar) {
+      const keyIndex = avatar.lastIndexOf('/');
+      profileBody.avatar = avatar;
+      profileBody.avatarKey = avatar.substring(keyIndex + 1);
     }
+
+    return await Profile.create({ ...profileBody, user: userId });
+  } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
   }
 };
+
 /**
  * Get profile by userId
- * @param {ObjectId} id
  * @returns {Promise<Profile>}
+ * @param userId
  */
 const getProfileByUserId = async (userId) => {
-  const profile = await Profile.findOne({ userId }).populate('user');
+  const profile = await Profile.findOne({ user: userId }).populate('user');
   if (!profile) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Profile not found');
-  }
-
-  // TODO: get signed url for avatar
-  if (profile.avatar) {
-    profile.avatar = getSignedUrl(BUCKET, profile.avatar);
   }
 
   return profile;
@@ -60,7 +62,7 @@ const getProfileByUserId = async (userId) => {
 /**
  * Update user password
  * @param {ObjectId} userId
- * @param {string} body
+ * @param {Object} body
  * @returns {Promise<User>}
  */
 const updatePassword = async (userId, body) => {

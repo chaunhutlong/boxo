@@ -109,7 +109,9 @@ shippingSchema.statics.calculateShippingValue = function (distance) {
       shippingCost = 0; // if distance is not provided or invalid, set shipping cost to 0
   }
 
-  return shippingCost * 1000; // convert shipping cost to VND
+  // convert shipping cost to VND and format it to 2 decimal places
+  shippingCost *= 1000;
+  return parseFloat(shippingCost.toFixed(2));
 };
 
 /**

@@ -8,13 +8,17 @@ const profileSchema = mongoose.Schema({
   avatar: {
     type: String,
   },
+  avatarKey: {
+    type: String,
+    private: true,
+  },
   addresses: [
     {
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'Address',
     },
   ],
-  userId: {
+  user: {
     type: mongoose.SchemaTypes.ObjectId,
     ref: 'User',
     required: true,
