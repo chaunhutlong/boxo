@@ -2,9 +2,14 @@
   "name": "create-nodejs-express-app",
   "version": "1.7.0",
   "description": "Create a Node.js app for building production-ready RESTful APIs using Express, by running one command",
-  "bin": "bin/createNodejsApp.js",
+  "bin": {
+    "create-nodejs-express-app": "bin/createNodejsApp.js"
+  },
   "main": "src/index.js",
-  "repository": "https://github.com/hagopj13/node-express-boilerplate.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hagopj13/node-express-boilerplate.git"
+  },
   "author": "Hagop Jamkojian <hagopj13@gmail.com>",
   "license": "MIT",
   "engines": {
@@ -102,5 +107,12 @@
     "nodemon": "^2.0.0",
     "prettier": "^2.0.5",
     "supertest": "^6.0.1"
+  },
+  "bugs": {
+    "url": "https://github.com/hagopj13/node-express-boilerplate/issues"
+  },
+  "homepage": "https://github.com/hagopj13/node-express-boilerplate#readme",
+  "directories": {
+    "test": "tests"
   }
 }

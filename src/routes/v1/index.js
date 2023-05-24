@@ -14,6 +14,7 @@ const provinceRoute = require('./province.route');
 const orderRoute = require('./order.route');
 const discountRoute = require('./discount.route');
 const postRoute = require('./post.route');
+const reviewRoute = require('./review.route')
 
 const router = express.Router();
 
@@ -62,10 +63,10 @@ const defaultRoutes = [
     path: '/discounts',
     route: discountRoute,
   },
-  // {
-  //   path: '/reviews',
-  //   route: reviewRoute,
-  // },
+  {
+    path: '/reviews',
+    route: reviewRoute,
+  },
   {
     path: '/cart',
     route: cartRoute,
