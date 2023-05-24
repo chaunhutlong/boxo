@@ -17,10 +17,14 @@ async function validateBookAndSignedUrl(book) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Book not found');
   }
 
-  Object.keys(book.images).forEach((key) => {
-    book.images[key].url = getSignedUrl(bucket.IMAGES, book.images[key].key);
-    book.images[key].key = undefined;
-  });
+  if (book.images && Object.keys(book.images).length > 0) {
+    Object.keys(book.images).forEach((key) => {
+      if (book.images[key].key) {
+        book.images[key].url = getSignedUrl(bucket.IMAGES, book.images[key].key);
+        book.images[key].key = undefined;
+      }
+    });
+  }
 }
 
 async function uploadBookImages(parsedImages, bookId) {

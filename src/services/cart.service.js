@@ -123,9 +123,7 @@ const removeItemFromCart = async (userId, bookBody) => {
 };
 
 const clearCart = async (userId) => {
-  const cart = await Cart.findOneAndUpdate({ userId }, { $set: { items: [] } }, { upsert: true, new: true });
-
-  return cart;
+  return Cart.findOneAndUpdate({ userId }, { $set: { items: [] } }, { upsert: true, new: true });
 };
 
 const updateCartCheckStatus = async (userId, bookBody) => {
