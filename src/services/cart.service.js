@@ -37,12 +37,21 @@ const addToCart = async (userId, addToCartData) => {
       existingCartItem.quantity += addToCartData.quantity;
       existingCartItem.totalPrice += book.price * addToCartData.quantity;
     } else {
+      let imageUrl = '';
+      if (book.images && book.images.length > 0) {
+        if (book.images[0].key) {
+          imageUrl = getSignedUrl(bucket.IMAGES, book.images[0].key);
+        } else {
+          imageUrl = book.images[0].url;
+        }
+      }
+
       cart.items.push({
         bookId: book._id,
         name: book.name,
         price: book.price,
         priceDiscount: book.priceDiscount,
-        imageUrl: getSignedUrl(bucket.IMAGES, book.images[0].key),
+        imageUrl,
         quantity: addToCartData.quantity,
         totalPrice: book.priceDiscount ? book.priceDiscount * addToCartData.quantity : book.price * addToCartData.quantity,
       });
