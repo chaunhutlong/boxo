@@ -18,7 +18,7 @@ async function startAgenda(io) {
    *  every sunday at 00:00 : cronTime.everySundayAt(0, 0)
    * */
 
-  await agenda.every('1 days', 'statisticsDaily');
+  await agenda.every('10 minutes', 'statisticsDaily');
 
 }
 
