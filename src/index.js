@@ -4,10 +4,8 @@ const cronTime = require('cron-time-generator');
 const { start, apiRoute } = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
-
 const socketio = require('./websocket/socketio');
 const { agenda } = require('./jobs/index');
-
 let server;
 
 async function startAgenda(io) {
@@ -20,7 +18,8 @@ async function startAgenda(io) {
    *  every sunday at 00:00 : cronTime.everySundayAt(0, 0)
    * */
 
-  await agenda.every(cronTime.everySundayAt(0, 0), 'findWeeklyTopOrder');
+  await agenda.every('1 days', 'statisticsDaily');
+
 }
 
 mongoose.connect(config.mongoose.url, config.mongoose.options).then(async () => {
