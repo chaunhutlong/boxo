@@ -1,8 +1,10 @@
 /* eslint-disable no-console */
 
-const { findWeeklyTopOrder } = require('./findWeeklyTopOrder');
+// const { findWeeklyTopOrder } = require('./findWeeklyTopOrder');
+const { statisticsDaily } = require('./statisticsDaily');
 
-const definitions = [findWeeklyTopOrder];
+
+const definitions = [ statisticsDaily];
 
 const allDefinition = async (agenda, logger) => {
   try {
