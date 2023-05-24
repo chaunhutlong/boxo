@@ -1,5 +1,4 @@
 const httpStatus = require('http-status');
-const _ = require('lodash');
 const he = require('he');
 const { Post } = require('../models');
 const ApiError = require('../utils/ApiError');
@@ -73,7 +72,7 @@ const createPost = async (currentUserId, postBody) => {
   });
 
   await post.save();
-  return post;
+  return post.populate('author').execPopulate();
 };
 
 /**
@@ -82,13 +81,12 @@ const createPost = async (currentUserId, postBody) => {
  * @returns {Promise<Post>}
  */
 const getPostById = async (postId) => {
-  const post = await Post.findById(postId).populate('author', 'name').lean();
+  const post = await Post.findById(postId).populate('author');
   if (!post) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Post not found');
   }
 
-  // Using Lodash omit
-  return _.omit(post, ['_id', '__v', 'author._id']);
+  return post;
 };
 
 /**
