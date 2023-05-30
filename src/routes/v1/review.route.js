@@ -7,15 +7,15 @@ const reviewController = require('../../controllers/review.controller');
 const router = express.Router();
 
 router
-    .route('/')
-    .post(auth(), validate(reviewValidation.createReview), reviewController.createReview)
-    .get(validate(reviewValidation.getReviews), reviewController.getReviews);
+  .route('/')
+  .post(auth(), validate(reviewValidation.createReview), reviewController.createReview)
+  .get(validate(reviewValidation.getReviews), reviewController.getReviews);
 
 router
-    .route('/:reviewId')
-    .get(validate(reviewValidation.getReview), reviewController.getReview)
-    .patch(auth(), validate(reviewValidation.updateReview), reviewController.updateReview)
-    .delete(auth(), validate(reviewValidation.deleteReview), reviewController.deleteReview);
+  .route('/:reviewId')
+  .get(validate(reviewValidation.getReview), reviewController.getReview)
+  .patch(auth(), validate(reviewValidation.updateReview), reviewController.updateReview)
+  .delete(auth(), validate(reviewValidation.deleteReview), reviewController.deleteReview);
 
 module.exports = router;
 

@@ -5,14 +5,16 @@ const { orderStatuses } = require('../config/order.enum');
 const { discountTypes } = require('../config/discount.enum');
 const ApiError = require('../utils/ApiError');
 
-const getCart = async (userId) => {
-  return Cart.findOne({ userId });
-};
-
 const validateCart = (cart) => {
   if (!cart || cart.items.length === 0) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Cart is empty');
   }
+};
+
+const getCheckedCart = async (userId) => {
+  const cart = await Cart.findOne({ userId, 'items.isChecked': true });
+  validateCart(cart);
+  return cart;
 };
 
 const validateAddress = (address) => {
@@ -182,8 +184,7 @@ const getOrderById = async (id) => {
  * @returns {Promise<Order>}
  */
 const processPaymentOrder = async (userId, paymentDetails) => {
-  const cart = await getCart(userId);
-  validateCart(cart);
+  const cart = await getCheckedCart(userId);
 
   const { totalPayment, discount } = await calculateTotalPayment(cart, paymentDetails.discountCode);
 

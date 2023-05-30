@@ -23,7 +23,7 @@ router
 
 router.route('/isbn/:isbn').get(validate(bookValidation.getBookByISBN), bookController.getBookByISBN);
 
-router.route('/crawl').post(bookController.crawlBook);
+router.route('/crawl').post(auth(roles.ADMIN), bookController.crawlBook);
 
 module.exports = router;
 
