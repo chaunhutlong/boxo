@@ -140,6 +140,10 @@ const updatePostById = async (postId, updateBody) => {
 const deletePostById = async (postId) => {
   const post = await Post.findById(postId);
 
+  // delete images from S3
+  const imageKeysToDelete = post.images.map((image) => image.key);
+  await deleteFilesFromS3(bucket.IMAGES, imageKeysToDelete);
+
   await post.remove();
 };
 
