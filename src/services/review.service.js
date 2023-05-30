@@ -8,17 +8,17 @@ const ApiError = require('../utils/ApiError');
  * @returns {Promise<Review>}
  */
 const createReview = async (currentUserId, reviewBody) => {
-    const { bookId, rating, comment } = reviewBody;
-    const user = currentUserId;
-    const review = new Review({
-        bookId,
-        user,
-        rating,
-        comment
-    });
-    await review.save();
-    return review.populate('user').execPopulate();
-    };
+  const { bookId, rating, comment } = reviewBody;
+  const user = currentUserId;
+  const review = new Review({
+    bookId,
+    user,
+    rating,
+    comment,
+  });
+  await review.save();
+  return review.populate('user').execPopulate();
+};
 
 /**
  *  Query for reviews
@@ -30,7 +30,7 @@ const createReview = async (currentUserId, reviewBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryReviews = async (filter, options) => {
-    return Review.paginate(filter, options);
+  return Review.paginate(filter, options);
 };
 
 /**
@@ -39,11 +39,11 @@ const queryReviews = async (filter, options) => {
  * @returns {Promise<Review>}
  * */
 const getReviewById = async (id) => {
-    const review = await Review.findById(id);
-    if (!review) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'Review not found');
-    }
-    return review;
+  const review = await Review.findById(id);
+  if (!review) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Review not found');
+  }
+  return review;
 };
 
 /**
@@ -53,19 +53,19 @@ const getReviewById = async (id) => {
  * @returns {Promise<Review>}
  * */
 const updateReviewById = async (reviewId, updateBody) => {
-    const review = await Review.findById(reviewId);
+  const review = await Review.findById(reviewId);
 
-    if(!review) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'Review not found');
-    }
+  if (!review) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Review not found');
+  }
 
-    const { comment, rating } = updateBody;
+  const { comment, rating } = updateBody;
 
-    review.comment = comment;
-    review.rating = rating;
+  review.comment = comment;
+  review.rating = rating;
 
-    await review.save();
-    return review;
+  await review.save();
+  return review;
 };
 
 /**
@@ -74,15 +74,15 @@ const updateReviewById = async (reviewId, updateBody) => {
  * @returns {Promise<Review>}
  * */
 const deleteReviewById = async (reviewId) => {
-    const review = await getReviewById(reviewId);
-    await review.remove();
-    return review;
-}
+  const review = await getReviewById(reviewId);
+  await review.remove();
+  return review;
+};
 
 module.exports = {
-    createReview,
-    queryReviews,
-    getReviewById,
-    updateReviewById,
-    deleteReviewById,
+  createReview,
+  queryReviews,
+  getReviewById,
+  updateReviewById,
+  deleteReviewById,
 };
