@@ -23,7 +23,7 @@ const addToCart = async (userId, addToCartData) => {
     let cart = await Cart.findOne({ userId });
 
     if (!cart) {
-      cart = await Cart.create({ userId });
+      cart = await createCart(userId);
     }
 
     const book = await Book.findById(addToCartData.bookId);

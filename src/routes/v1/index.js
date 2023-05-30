@@ -14,7 +14,8 @@ const provinceRoute = require('./province.route');
 const orderRoute = require('./order.route');
 const discountRoute = require('./discount.route');
 const postRoute = require('./post.route');
-const reviewRoute = require('./review.route')
+const reviewRoute = require('./review.route');
+const statisticRoute = require('./statistic.route');
 
 const router = express.Router();
 
@@ -47,10 +48,10 @@ const defaultRoutes = [
     path: '/orders',
     route: orderRoute,
   },
-  // {
-  //   path: '/statistics',
-  //   route: statisticRoute,
-  // },
+  {
+    path: '/statistics',
+    route: statisticRoute,
+  },
   {
     path: '/profile',
     route: profileRoute,
