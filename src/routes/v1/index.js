@@ -14,6 +14,8 @@ const provinceRoute = require('./province.route');
 const orderRoute = require('./order.route');
 const discountRoute = require('./discount.route');
 const postRoute = require('./post.route');
+const reviewRoute = require('./review.route');
+const statisticRoute = require('./statistic.route');
 
 const router = express.Router();
 
@@ -46,10 +48,10 @@ const defaultRoutes = [
     path: '/orders',
     route: orderRoute,
   },
-  // {
-  //   path: '/statistics',
-  //   route: statisticRoute,
-  // },
+  {
+    path: '/statistics',
+    route: statisticRoute,
+  },
   {
     path: '/profile',
     route: profileRoute,
@@ -62,10 +64,10 @@ const defaultRoutes = [
     path: '/discounts',
     route: discountRoute,
   },
-  // {
-  //   path: '/reviews',
-  //   route: reviewRoute,
-  // },
+  {
+    path: '/reviews',
+    route: reviewRoute,
+  },
   {
     path: '/cart',
     route: cartRoute,

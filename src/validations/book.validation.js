@@ -25,6 +25,8 @@ const getBooks = {
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
+    search: Joi.string().allow(null, ''),
+    query: Joi.string().allow(null, ''),
   }),
 };
 
@@ -63,10 +65,28 @@ const deleteBook = {
   }),
 };
 
+const searchBooks = {
+  query: Joi.object().keys({
+    query: Joi.string().allow(null, ''),
+    search: Joi.string().required(),
+    sortBy: Joi.string().allow(null, ''),
+    limit: Joi.number().allow(null, '').integer(),
+    page: Joi.number().allow(null, '').integer(),
+  }),
+};
+
+const getBookByISBN = {
+  params: Joi.object().keys({
+    isbn: Joi.string().required(),
+  }),
+};
+
 module.exports = {
   createBook,
   getBooks,
   getBook,
   updateBook,
   deleteBook,
+  searchBooks,
+  getBookByISBN,
 };

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON } = require('./plugins');
+const { toJSON, paginate } = require('./plugins');
 
 const statisticSchema = mongoose.Schema(
   {
@@ -30,6 +30,7 @@ const statisticSchema = mongoose.Schema(
 
 // add plugin that converts mongoose to json
 statisticSchema.plugin(toJSON);
+statisticSchema.plugin(paginate);
 
 /**
  * @typedef Statistic

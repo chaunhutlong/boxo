@@ -40,8 +40,7 @@ citySchema.statics.getDistanceFromLatLonInKm = async function (lat1, lon1, lat2,
 
 citySchema.statics.getDistance = async function (cityId) {
   const city = await this.findById(cityId);
-  const distance = await this.getDistanceFromLatLonInKm(latDefault, lngDefault, city.lat, city.lng);
-  return distance;
+  return this.getDistanceFromLatLonInKm(latDefault, lngDefault, city.lat, city.lng);
 };
 
 /**

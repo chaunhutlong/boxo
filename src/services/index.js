@@ -13,3 +13,5 @@ module.exports.provinceService = require('./province.service');
 module.exports.orderService = require('./order.service');
 module.exports.discountService = require('./discount.service');
 module.exports.postService = require('./post.service');
+module.exports.reviewService = require('./review.service');
+module.exports.statisticService = require('./statistic.service');

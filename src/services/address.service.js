@@ -1,9 +1,9 @@
 const httpStatus = require('http-status');
-const { Address, City } = require('../models');
+const { Address, City, Shipping } = require('../models');
 const ApiError = require('../utils/ApiError');
 
 /**
- * Create a address
+ * Create an address
  * @param {ObjectId} userId
  * @param {Object} addressBody
  * @returns {Promise<Address>}
@@ -33,17 +33,12 @@ const createAddress = async (userId, addressBody) => {
 };
 
 /**
- * Query for addresss
- * @param {Object} filter - Mongo filter
- * @param {Object} options - Query options
- * @param {string} [options.sortBy] - Sort option in the format: sortField:(desc|asc)
- * @param {number} [options.limit] - Maximum number of results per page (default = 10)
- * @param {number} [options.page] - Current page (default = 1)
+ * Get all addresses
+ * @param {ObjectId} userId
  * @returns {Promise<QueryResult>}
  */
-const queryAddresss = async (filter, options) => {
-  const addresss = await Address.paginate(filter, options);
-  return addresss;
+const queryAddresses = async (userId) => {
+  return Address.find({ userId }).populate('cityId');
 };
 
 /**
@@ -62,7 +57,8 @@ const getAddressById = async (id) => {
 /**
  * Update address by id
  * @param {ObjectId} addressId
- * @param {Object} updateBody
+ * @param {ObjectId} userId
+ * @param {Object} addressBody
  * @returns {Promise<Address>}
  */
 const updateAddressById = async (addressId, userId, addressBody) => {
@@ -92,10 +88,25 @@ const deleteAddressById = async (addressId) => {
   await address.remove();
 };
 
+/**
+ * Calculate shipping fee
+ * @param {ObjectId} userId
+ */
+const calculateShippingCost = async (userId) => {
+  const address = await Address.findOne({ userId, isDefault: true });
+
+  if (!address) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Address not found');
+  }
+
+  return Shipping.calculateShippingValue(address.distance);
+};
+
 module.exports = {
   createAddress,
-  queryAddresss,
+  queryAddresses,
   getAddressById,
   updateAddressById,
   deleteAddressById,
+  calculateShippingCost,
 };

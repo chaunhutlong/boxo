@@ -2,15 +2,21 @@
   "name": "create-nodejs-express-app",
   "version": "1.7.0",
   "description": "Create a Node.js app for building production-ready RESTful APIs using Express, by running one command",
-  "bin": "bin/createNodejsApp.js",
+  "bin": {
+    "create-nodejs-express-app": "bin/createNodejsApp.js"
+  },
   "main": "src/index.js",
-  "repository": "https://github.com/hagopj13/node-express-boilerplate.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hagopj13/node-express-boilerplate.git"
+  },
   "author": "Hagop Jamkojian <hagopj13@gmail.com>",
   "license": "MIT",
   "engines": {
     "node": ">=12.0.0"
   },
   "scripts": {
+    "build:digitalocean": "yarn install --production=false && yarn run build && rm -rf node_modules && yarn install --production --frozen-lockfile",
     "start": "pm2 start ecosystem.config.json --no-daemon",
     "dev": "cross-env NODE_ENV=development nodemon src/index.js",
     "lint": "eslint .",
@@ -56,10 +62,12 @@
     "express": "^4.17.1",
     "express-mongo-sanitize": "^2.0.0",
     "express-rate-limit": "^5.0.0",
+    "he": "^1.2.0",
     "helmet": "^4.1.0",
     "http-status": "^1.4.0",
     "joi": "^17.3.0",
     "jsonwebtoken": "^9.0.0",
+    "lodash": "^4.17.21",
     "luxon": "^3.3.0",
     "moment": "^2.24.0",
     "mongodb": "^5.1.0",
@@ -67,14 +75,17 @@
     "morgan": "^1.9.1",
     "node-fetch": "^2.6.9",
     "nodemailer": "^6.3.1",
+    "openapi-types": "12.1.1",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
-    "pm2": "^5.1.0",
+    "pm2": "^5.3.0",
     "sequelize": "^6.28.0",
     "socket.io": "^4.6.1",
+    "socket.io-adapter": "^2.5.2",
     "soft-delete-plugin-mongoose": "^1.0.15",
     "swagger-jsdoc": "^6.0.8",
     "swagger-ui-express": "^4.1.6",
+    "uuid": "^9.0.0",
     "validator": "^13.0.0",
     "winston": "^3.2.1",
     "xss-clean": "^0.1.1"
@@ -88,7 +99,6 @@
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-prettier": "^3.1.1",
     "eslint-plugin-security": "^1.4.0",
-    "faker": "^5.1.0",
     "husky": "^7.0.0",
     "lint-staged": "^11.0.0",
     "multer": "^1.4.5-lts.1",
@@ -97,5 +107,12 @@
     "nodemon": "^2.0.0",
     "prettier": "^2.0.5",
     "supertest": "^6.0.1"
+  },
+  "bugs": {
+    "url": "https://github.com/hagopj13/node-express-boilerplate/issues"
+  },
+  "homepage": "https://github.com/hagopj13/node-express-boilerplate#readme",
+  "directories": {
+    "test": "tests"
   }
 }

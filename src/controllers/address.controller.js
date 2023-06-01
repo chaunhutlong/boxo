@@ -1,5 +1,4 @@
 const httpStatus = require('http-status');
-const pick = require('../utils/pick');
 const catchAsync = require('../utils/catchAsync');
 const { addressService } = require('../services');
 
@@ -8,10 +7,8 @@ const createAddress = catchAsync(async (req, res) => {
   res.status(httpStatus.CREATED).send(address);
 });
 
-const getAddresss = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['name', 'role']);
-  const options = pick(req.query, ['sortBy', 'limit', 'page']);
-  const result = await addressService.queryAddresss(filter, options);
+const queryAddresses = catchAsync(async (req, res) => {
+  const result = await addressService.queryAddresses(req.user.id);
   res.send(result);
 });
 
@@ -31,10 +28,16 @@ const deleteAddress = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const getShippingCost = catchAsync(async (req, res) => {
+  const value = await addressService.calculateShippingCost(req.user.id);
+  res.status(httpStatus.OK).send({ value });
+});
+
 module.exports = {
   createAddress,
-  getAddresss,
+  queryAddresses,
   getAddress,
   updateAddress,
   deleteAddress,
+  getShippingCost,
 };

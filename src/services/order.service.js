@@ -5,15 +5,16 @@ const { orderStatuses } = require('../config/order.enum');
 const { discountTypes } = require('../config/discount.enum');
 const ApiError = require('../utils/ApiError');
 
-const getCart = async (userId) => {
-  const cart = await Cart.findOne({ userId });
-  return cart;
-};
-
 const validateCart = (cart) => {
   if (!cart || cart.items.length === 0) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Cart is empty');
   }
+};
+
+const getCheckedCart = async (userId) => {
+  const cart = await Cart.findOne({ userId, 'items.isChecked': true });
+  validateCart(cart);
+  return cart;
 };
 
 const validateAddress = (address) => {
@@ -23,23 +24,20 @@ const validateAddress = (address) => {
 };
 
 const getDefaultAddress = async (userId) => {
-  const address = await Address.findOne({ userId, isDefault: true }).populate({
+  return Address.findOne({ userId, isDefault: true }).populate({
     path: 'city',
     populate: {
       path: 'province',
     },
   });
-  return address;
 };
 
 const calculateShippingCost = async (distance) => {
-  const shippingCost = await Shipping.calculateShippingValue(distance);
-  return shippingCost;
+  return Shipping.calculateShippingValue(distance);
 };
 
 const getAvailableDiscount = async (discountCode) => {
-  const discount = await Discount.getAvailableDiscount(discountCode);
-  return discount;
+  return Discount.getAvailableDiscount(discountCode);
 };
 
 const calculateTotalPayment = async (cart, discountCode) => {
@@ -70,46 +68,42 @@ const calculateTotalPayment = async (cart, discountCode) => {
 };
 
 const createOrder = async (userId, totalPayment, discount, items) => {
-  const order = await Order.create({
+  return Order.create({
     user: userId,
     totalPayment,
     discount: discount && discount.id,
     books: items,
     status: orderStatuses.PENDING,
   });
-  return order;
 };
 
 const formatCityAddress = (city, name, phone, description) => {
-  const cityAddress = {
+  return {
     city: city && city.name,
     province: city.province && city.province.name,
     name,
     phone,
     description,
   };
-  return cityAddress;
 };
 
 const createShipping = async (address, shippingCost, orderId) => {
-  const shipping = await Shipping.create({
+  return Shipping.create({
     address,
     value: shippingCost,
     trackingNumber: await Shipping.generateTrackingNumber(8),
     status: shippingStatuses.PENDING,
     order: orderId,
   });
-  return shipping;
 };
 
 const createPayment = async (orderId, totalPayment, type, discount) => {
-  const payment = await Payment.create({
+  return Payment.create({
     orderId,
     value: totalPayment,
     type,
     discount: discount && discount.id,
   });
-  return payment;
 };
 
 const updateOrderReferences = async (order, shippingId, paymentId) => {
@@ -140,8 +134,7 @@ const clearCart = async (cart) => {
  */
 
 const getShippingByOrderId = async (orderId) => {
-  const shipping = await Shipping.findOne({ order: orderId });
-  return shipping;
+  return Shipping.findOne({ order: orderId });
 };
 
 /**
@@ -149,7 +142,6 @@ const getShippingByOrderId = async (orderId) => {
  * @param {ObjectId} orderId
  * @param {Object} updateBody
  * @returns {Promise<Shipping>}
- * @throws {NotFoundError}
  */
 const updateShipping = async (orderId, updateBody) => {
   const shipping = await getShippingByOrderId(orderId);
@@ -169,15 +161,13 @@ const updateShipping = async (orderId, updateBody) => {
  */
 
 const queryOrders = async (filter, options) => {
-  const orders = await Order.paginate(filter, options);
-  return orders;
+  return Order.paginate(filter, options);
 };
 
 /**
  * Get order by id
  * @param {ObjectId} id
  * @returns {Promise<Order>}
- * @throws {NotFoundError}
  */
 const getOrderById = async (id) => {
   const order = await Order.findById(id).populate('books.bookId').populate('shipping').populate('payment');
@@ -194,8 +184,7 @@ const getOrderById = async (id) => {
  * @returns {Promise<Order>}
  */
 const processPaymentOrder = async (userId, paymentDetails) => {
-  const cart = await getCart(userId);
-  validateCart(cart);
+  const cart = await getCheckedCart(userId);
 
   const { totalPayment, discount } = await calculateTotalPayment(cart, paymentDetails.discountCode);
 
@@ -213,14 +202,13 @@ const processPaymentOrder = async (userId, paymentDetails) => {
   await updateOrderReferences(order, shipping._id, payment._id);
   await updateBookQuantities(cart.items);
 
-  clearCart(cart);
+  await clearCart(cart);
 
   return order;
 };
 
 const findPendingPayment = async (orderId) => {
-  const payment = await Payment.findOne({ orderId, isPaid: false });
-  return payment;
+  return Payment.findOne({ orderId, isPaid: false });
 };
 
 const validatePayment = (payment) => {
@@ -236,8 +224,7 @@ const processPayment = async (payment) => {
 };
 
 const findOrderWithShipping = async (orderId) => {
-  const order = await Order.findById(orderId).populate('shipping');
-  return order;
+  return Order.findById(orderId).populate('shipping');
 };
 
 const updateOrderAndShippingStatus = async (order) => {
@@ -261,7 +248,7 @@ const checkoutOrder = async (userId, orderId) => {
     await processPayment(payment);
 
     const order = await findOrderWithShipping(orderId);
-    updateOrderAndShippingStatus(order);
+    await updateOrderAndShippingStatus(order);
 
     return order;
   } catch (error) {

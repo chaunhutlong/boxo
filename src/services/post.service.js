@@ -1,49 +1,42 @@
 const httpStatus = require('http-status');
+const he = require('he');
 const { Post } = require('../models');
 const ApiError = require('../utils/ApiError');
-const { getSignedUrl, deleteFilesFromS3, uploadImagesBase64 } = require('../utils/s3');
-
-const BUCKET = process.env.AWS_S3_IMAGE_BUCKET;
+const { parseBase64ImagesArray } = require('../utils/base64');
+const { deleteFilesFromS3, uploadImagesBase64 } = require('../utils/s3');
+const { bucket } = require('../config/s3.enum');
 
 /**
- * Create a post
- * @param {Object} postBody
- * @returns {Promise<Post>}
+ * Handle the base64 images in the content
+ * Upload to S3 and replace with URL
+ * @param {ObjectId} authorId
+ * @param {string} content
+ * @returns {Promise<{parsedContent: string, images: {key: string, url: string}[]}>}
+ * @private
  */
-const createPost = async (currentUserId, postBody) => {
-  // if content contain base64 image, upload to s3 and replace with url
-  const { title, content } = postBody;
-  const author = currentUserId;
-  const regex = /data:image\/(png|jpg|jpeg);base64,(.*)/g;
-  let match = regex.exec(content);
+const _parseAndUploadBase64ImagesToS3 = async (authorId, content) => {
+  const parsedImages = parseBase64ImagesArray(content);
   const images = [];
-  const index = 0;
-  while (match != null) {
-    let base64 = match[2];
-    const filename = `post_${author}_${index}.${imageType}`;
-    const url = uploadImagesBase64(BUCKET, base64, filename).then((uploadedImage) => {
-      return getSignedUrl(BUCKET, uploadedImage.Key);
-    });
+  let parsedContent = content;
 
-    images.push({
-      url,
-      filename,
-    });
+  if (parsedImages.length > 0) {
+    const uploadedImages = await uploadImagesBase64(bucket.IMAGES, parsedImages, `post-${authorId}`, 'public-read');
 
-    index += 1;
-    match = regex.exec(content);
-    console.log(match);
+    // Replace base64 images with URLs in the content
+    uploadedImages.forEach((uploadedImage, index) => {
+      const { Key, Location } = uploadedImage;
+      const { input } = parsedImages[index];
+
+      parsedContent = parsedContent.replace(input, Location);
+
+      images.push({ key: Key, url: Location });
+    });
   }
 
-  const post = new Post({
-    title,
-    content,
-    author,
-    images,
-  });
+  // Convert HTML entities back to characters
+  parsedContent = he.decode(parsedContent);
 
-  await post.save();
-  return post;
+  return { parsedContent, images };
 };
 
 /**
@@ -56,20 +49,43 @@ const createPost = async (currentUserId, postBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryPosts = async (filter, options) => {
-  const posts = await Post.paginate(filter, options);
-  return posts;
+  return Post.paginate(filter, options);
+};
+
+/**
+ * Create a post
+ * @param {ObjectId} currentUserId
+ * @param {Object} postBody
+ * @returns {Promise<Post>}
+ */
+const createPost = async (currentUserId, postBody) => {
+  const { title, content } = postBody;
+  const authorId = currentUserId;
+
+  const { parsedContent, images } = await _parseAndUploadBase64ImagesToS3(authorId, content);
+
+  const post = new Post({
+    title,
+    content: parsedContent,
+    author: authorId,
+    images,
+  });
+
+  await post.save();
+  return post.populate('author').execPopulate();
 };
 
 /**
  * Get post by id
- * @param {ObjectId} id
+ * @param {ObjectId} postId
  * @returns {Promise<Post>}
  */
-const getPostById = async (id) => {
-  const post = await Post.findById(id);
+const getPostById = async (postId) => {
+  const post = await Post.findById(postId).populate('author');
   if (!post) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Post not found');
   }
+
   return post;
 };
 
@@ -80,9 +96,38 @@ const getPostById = async (id) => {
  * @returns {Promise<Post>}
  */
 const updatePostById = async (postId, updateBody) => {
-  const post = await getPostById(postId);
+  const post = await Post.findById(postId);
 
-  Object.assign(post, updateBody);
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Post not found');
+  }
+
+  const { title } = updateBody;
+  let { content } = updateBody;
+  content = he.decode(content);
+
+  // Filter out the images that are no longer present in the updated content
+  const imageKeysToDelete = [];
+  post.images = post.images.filter((image) => {
+    if (!content.includes(image.url)) {
+      imageKeysToDelete.push(image.key);
+      return false;
+    }
+    return true;
+  });
+
+  // Delete images from S3
+  if (imageKeysToDelete.length > 0) {
+    await deleteFilesFromS3(bucket.IMAGES, imageKeysToDelete);
+  }
+
+  const { parsedContent, images } = await _parseAndUploadBase64ImagesToS3(post.author, content);
+
+  post.title = title;
+  post.content = parsedContent;
+
+  // Combine the existing and new images
+  post.images.push(...images);
 
   await post.save();
   return post;
@@ -93,7 +138,11 @@ const updatePostById = async (postId, updateBody) => {
  * @param {ObjectId} postId
  */
 const deletePostById = async (postId) => {
-  const post = await getPostById(postId);
+  const post = await Post.findById(postId);
+
+  // delete images from S3
+  const imageKeysToDelete = post.images.map((image) => image.key);
+  await deleteFilesFromS3(bucket.IMAGES, imageKeysToDelete);
 
   await post.remove();
 };

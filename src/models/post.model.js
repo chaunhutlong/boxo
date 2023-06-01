@@ -1,36 +1,39 @@
 const mongoose = require('mongoose');
-const { toJSON, paginate } = require('./plugins');
+const { paginate } = require('./plugins');
 
-const postSchema = mongoose.Schema({
-  title: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  content: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  author: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  images: [
-    {
-      key: {
-        type: String,
-      },
-      url: {
-        type: String,
-      },
+const postSchema = mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
     },
-  ],
-});
+    content: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    images: [
+      {
+        key: {
+          type: String,
+        },
+        url: {
+          type: String,
+        },
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+);
 
-// add plugin that converts mongoose to json
-postSchema.plugin(toJSON);
 postSchema.plugin(paginate);
 
 /**

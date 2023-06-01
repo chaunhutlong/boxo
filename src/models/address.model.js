@@ -16,7 +16,7 @@ const addressSchema = mongoose.Schema({
   description: {
     type: String,
   },
-  city: {
+  cityId: {
     type: mongoose.SchemaTypes.ObjectId,
     ref: 'City',
     required: true,

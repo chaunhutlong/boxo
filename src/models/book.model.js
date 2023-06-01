@@ -6,7 +6,6 @@ const imageSchema = new mongoose.Schema(
   {
     key: {
       type: String,
-      required: true,
     },
     url: {
       type: String,
@@ -58,15 +57,10 @@ const bookSchema = mongoose.Schema(
     },
     publishedDate: {
       type: Date,
-      required: true,
     },
     publisherId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Publisher',
-      required: true,
-    },
-    imageCover: {
-      type: imageSchema,
     },
     images: [imageSchema],
     authors: [
@@ -109,6 +103,11 @@ bookSchema.plugin(softDeletePlugin);
 
 bookSchema.statics.isNameTaken = async function (name, excludeBookId) {
   const book = await this.findOne({ name, _id: { $ne: excludeBookId } });
+  return !!book;
+};
+
+bookSchema.statics.isISBNTaken = async function (isbn, excludeBookId) {
+  const book = await this.findOne({ isbn, _id: { $ne: excludeBookId } });
   return !!book;
 };
 

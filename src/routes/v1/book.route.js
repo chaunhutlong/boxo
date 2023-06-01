@@ -21,6 +21,10 @@ router
   .put(auth(roles.ADMIN, roles.MANAGER), upload.array(), validate(bookValidation.updateBook), bookController.updateBook)
   .delete(auth(roles.ADMIN, roles.MANAGER), validate(bookValidation.deleteBook), bookController.deleteBook);
 
+router.route('/isbn/:isbn').get(validate(bookValidation.getBookByISBN), bookController.getBookByISBN);
+
+router.route('/crawl').post(auth(roles.ADMIN), bookController.crawlBook);
+
 module.exports = router;
 
 /**

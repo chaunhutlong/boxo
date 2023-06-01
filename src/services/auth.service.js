@@ -6,6 +6,7 @@ const Token = require('../models/token.model');
 const ApiError = require('../utils/ApiError');
 const { tokenTypes } = require('../config/tokens');
 const { createOrUpdateProfile } = require('./profile.service');
+const { createCart } = require('./cart.service');
 
 /**
  * Login with username and password
@@ -110,6 +111,7 @@ const loginGoogle = async (accessToken) => {
     });
 
     await createOrUpdateProfile(newUser.id, picture, {});
+    await createCart(newUser.id);
     return newUser;
   }
 
