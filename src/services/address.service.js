@@ -65,7 +65,7 @@ const updateAddressById = async (addressId, userId, addressBody) => {
   const address = await getAddressById(addressId);
 
   if (addressBody.isDefault) {
-    await address.updateMany({ userId }, { isDefault: false });
+    await Address.updateMany({ userId }, { isDefault: false });
   }
 
   if (addressBody.cityId) {
