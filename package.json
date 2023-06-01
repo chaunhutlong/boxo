@@ -80,7 +80,7 @@
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {
-    "aws-sdk": "^2.1282.0",
+    "aws-sdk": "^2.1381.0",
     "coveralls": "^3.0.7",
     "eslint": "^7.0.0",
     "eslint-config-airbnb-base": "^14.0.0",
