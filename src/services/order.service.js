@@ -25,7 +25,7 @@ const validateAddress = (address) => {
 
 const getDefaultAddress = async (userId) => {
   return Address.findOne({ userId, isDefault: true }).populate({
-    path: 'city',
+    path: 'cityId',
     populate: {
       path: 'province',
     },
@@ -261,7 +261,7 @@ const processPaymentOrder = async (userId, paymentDetails) => {
   const totalPaymentWithShipping = totalPayment + shippingCost;
 
   const order = await createOrder(userId, totalPaymentWithShipping, discount, cart.items);
-  const cityAddress = formatCityAddress(address.city, address.name, address.phone, address.description);
+  const cityAddress = formatCityAddress(address.cityId, address.name, address.phone, address.description);
   const shipping = await createShipping(cityAddress, shippingCost, order._id);
   const payment = await createPayment(order._id, totalPaymentWithShipping, paymentDetails.type, discount);
 
