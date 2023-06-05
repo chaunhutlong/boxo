@@ -190,7 +190,7 @@ const getAllOrders = async () => {
       userId: order.user._id,
       userName: order.user.name,
       quantity: order.books.reduce((total, item) => total + item.quantity, 0),
-      date: moment(order.createdAt).format('YYYY-MM-DD'),
+      date: order.createdAt,
       totalPrice: order.totalPayment,
       status: order.status,
     };
