@@ -39,12 +39,13 @@ const checkoutOrder = catchAsync(async (req, res) => {
   res.send(order);
 });
 
-const getOrdersofAllUser = catchAsync(async (req, res) => {
+const getAllUserOrders = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['status']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
-  const result = await orderService.getAllOrders(filter, options);
+  const result = await orderService.getAllUserOrders(filter, options);
   res.send(result);
 });
+
 const getOrdersByUserId = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['status']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
@@ -59,6 +60,6 @@ module.exports = {
   getOrderById,
   processPaymentOrder,
   checkoutOrder,
-  getOrdersofAllUser,
+  getAllUserOrders,
   getOrdersByUserId,
 };
