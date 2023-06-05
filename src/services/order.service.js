@@ -1,4 +1,5 @@
 const httpStatus = require('http-status');
+const moment = require('moment');
 const { Book, Order, Shipping, Address, Cart, Discount, Payment } = require('../models');
 const { shippingStatuses } = require('../config/shipping.enum');
 const { orderStatuses } = require('../config/order.enum');
@@ -178,6 +179,25 @@ const getOrderById = async (id) => {
 };
 
 /**
+ * Get order of all users
+ * @returns {Promise<Order>}
+ */
+const getAllOrders = async () => {
+  const orders = await Order.find().populate('books.bookId').populate('user');
+  return orders.map((order) => {
+    return {
+      orderId: order._id,
+      userId: order.user._id,
+      userName: order.user.name,
+      quantity: order.books.reduce((total, item) => total + item.quantity, 0),
+      date: moment(order.createdAt).format('YYYY-MM-DD'),
+      totalPrice: order.totalPayment,
+      status: order.status,
+    };
+  });
+};
+
+/**
  * Payment order
  * @param {ObjectId} userId
  * @param {Object} paymentDetails
@@ -263,4 +283,5 @@ module.exports = {
   getOrderById,
   processPaymentOrder,
   checkoutOrder,
+  getAllOrders,
 };
