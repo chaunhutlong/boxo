@@ -188,6 +188,7 @@ const getAllOrders = async (filter, options) => {
   const ordersPromise = Order.find(filter)
     .populate('books.bookId')
     .populate('user')
+    .populate('payment')
     .sort(sortBy)
     .skip((page - 1) * limit)
     .limit(limit);
@@ -200,12 +201,39 @@ const getAllOrders = async (filter, options) => {
     userName: order.user.name,
     quantity: order.books.reduce((total, item) => total + item.quantity, 0),
     date: order.createdAt,
+    paymentMethod: order.payment.type,
     totalPrice: order.totalPayment,
     status: order.status,
   }));
 
   return {
     datas: mappedOrders,
+    page,
+    limit,
+    totalPages: Math.ceil(count / limit),
+    totalResults: count,
+  };
+};
+
+/**
+ * Get order by user id
+ * @param {ObjectId} userId
+ * @returns {Promise<Order>}
+ */
+const getOrdersByUserId = async (userId, filter, options) => {
+  const { sortBy, limit = 10, page = 1 } = options;
+
+  const ordersPromise = await Order.find({ user: userId, ...filter })
+    .populate('books.bookId')
+    .populate('shipping')
+    .populate('payment')
+    .sort(sortBy)
+    .skip((page - 1) * limit)
+    .limit(limit);
+  const countPromise = Order.countDocuments({ user: userId, ...filter });
+  const [count, orders] = await Promise.all([countPromise, ordersPromise]);
+  return {
+    datas: orders,
     page,
     limit,
     totalPages: Math.ceil(count / limit),
@@ -300,4 +328,5 @@ module.exports = {
   processPaymentOrder,
   checkoutOrder,
   getAllOrders,
+  getOrdersByUserId,
 };
