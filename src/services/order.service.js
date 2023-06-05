@@ -181,19 +181,35 @@ const getOrderById = async (id) => {
  * Get order of all users
  * @returns {Promise<Order>}
  */
-const getAllOrders = async () => {
-  const orders = await Order.find().populate('books.bookId').populate('user');
-  return orders.map((order) => {
-    return {
-      orderId: order._id,
-      userId: order.user._id,
-      userName: order.user.name,
-      quantity: order.books.reduce((total, item) => total + item.quantity, 0),
-      date: order.createdAt,
-      totalPrice: order.totalPayment,
-      status: order.status,
-    };
-  });
+const getAllOrders = async (filter, options) => {
+  const { sortBy, limit = 10, page = 1 } = options;
+
+  const countPromise = Order.countDocuments(filter);
+  const ordersPromise = Order.find(filter)
+    .populate('books.bookId')
+    .populate('user')
+    .sort(sortBy)
+    .skip((page - 1) * limit)
+    .limit(limit);
+
+  const [count, orders] = await Promise.all([countPromise, ordersPromise]);
+
+  const mappedOrders = orders.map((order) => ({
+    orderId: order._id,
+    userId: order.user._id,
+    userName: order.user.name,
+    quantity: order.books.reduce((total, item) => total + item.quantity, 0),
+    date: order.createdAt,
+    totalPrice: order.totalPayment,
+    status: order.status,
+  }));
+
+  return {
+    orders: mappedOrders,
+    totalOrders: count,
+    currentPage: page,
+    totalPages: Math.ceil(count / limit),
+  };
 };
 
 /**
