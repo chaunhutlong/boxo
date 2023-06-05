@@ -19,6 +19,8 @@ router.route('/checkout').post(auth(), validate(orderValidation.checkoutOrder), 
 
 router.route('/all').get(auth(), validate(orderValidation.getOrders), orderController.getOrdersofAllUser);
 
+router.route('/user/:userId').get(auth(), validate(orderValidation.paramsUserId), orderController.getOrdersByUserId);
+
 router.route('/:orderId').get(auth(), validate(orderValidation.paramsOrderId), orderController.getOrderById);
 
 module.exports = router;

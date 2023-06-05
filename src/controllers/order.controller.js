@@ -45,6 +45,12 @@ const getOrdersofAllUser = catchAsync(async (req, res) => {
   const result = await orderService.getAllOrders(filter, options);
   res.send(result);
 });
+const getOrdersByUserId = catchAsync(async (req, res) => {
+  const filter = pick(req.query, ['status']);
+  const options = pick(req.query, ['sortBy', 'limit', 'page']);
+  const order = await orderService.getOrdersByUserId(req.params.userId, filter, options);
+  res.send(order);
+});
 
 module.exports = {
   getShippingByOrderId,
@@ -54,4 +60,5 @@ module.exports = {
   processPaymentOrder,
   checkoutOrder,
   getOrdersofAllUser,
+  getOrdersByUserId,
 };
