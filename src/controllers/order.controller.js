@@ -40,7 +40,9 @@ const checkoutOrder = catchAsync(async (req, res) => {
 });
 
 const getOrdersofAllUser = catchAsync(async (req, res) => {
-  const result = await orderService.getAllOrders();
+  const filter = pick(req.query, ['status']);
+  const options = pick(req.query, ['sortBy', 'limit', 'page']);
+  const result = await orderService.getAllOrders(filter, options);
   res.send(result);
 });
 
