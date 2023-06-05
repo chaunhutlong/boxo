@@ -178,6 +178,25 @@ const getOrderById = async (id) => {
 };
 
 /**
+ * Get order of all users
+ * @returns {Promise<Order>}
+ */
+const getAllOrders = async () => {
+  const orders = await Order.find().populate('books.bookId').populate('user');
+  return orders.map((order) => {
+    return {
+      orderId: order._id,
+      userId: order.user._id,
+      userName: order.user.name,
+      quantity: order.books.reduce((total, item) => total + item.quantity, 0),
+      date: order.createdAt,
+      totalPrice: order.totalPayment,
+      status: order.status,
+    };
+  });
+};
+
+/**
  * Payment order
  * @param {ObjectId} userId
  * @param {Object} paymentDetails
@@ -263,4 +282,5 @@ module.exports = {
   getOrderById,
   processPaymentOrder,
   checkoutOrder,
+  getAllOrders,
 };

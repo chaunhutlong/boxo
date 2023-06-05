@@ -39,6 +39,11 @@ const checkoutOrder = catchAsync(async (req, res) => {
   res.send(order);
 });
 
+const getOrdersofAllUser = catchAsync(async (req, res) => {
+  const result = await orderService.getAllOrders();
+  res.send(result);
+});
+
 module.exports = {
   getShippingByOrderId,
   updateShipping,
@@ -46,4 +51,5 @@ module.exports = {
   getOrderById,
   processPaymentOrder,
   checkoutOrder,
+  getOrdersofAllUser,
 };
