@@ -179,9 +179,9 @@ const getOrderById = async (id) => {
 
 /**
  * Get order of all users
- * @returns {Promise<Order>}
+ * @returns {Promise<{totalResults: unknown extends (object & {then(onfulfilled: infer F): any}) ? (F extends ((value: infer V, ...args: any) => any) ? Awaited<V> : never) : unknown, data: *, limit: number, totalPages: number, page: number}>}
  */
-const getAllOrders = async (filter, options) => {
+const getAllUserOrders = async (filter, options) => {
   const { sortBy, limit = 10, page = 1 } = options;
 
   const countPromise = Order.countDocuments(filter);
@@ -207,7 +207,7 @@ const getAllOrders = async (filter, options) => {
   }));
 
   return {
-    datas: mappedOrders,
+    data: mappedOrders,
     page,
     limit,
     totalPages: Math.ceil(count / limit),
@@ -218,7 +218,9 @@ const getAllOrders = async (filter, options) => {
 /**
  * Get order by user id
  * @param {ObjectId} userId
- * @returns {Promise<Order>}
+ * @param filter
+ * @param options
+ * @returns {Promise<{totalResults: unknown extends (object & {then(onfulfilled: infer F): any}) ? (F extends ((value: infer V, ...args: any) => any) ? Awaited<V> : never) : unknown, data: unknown extends (object & {then(onfulfilled: infer F): any}) ? (F extends ((value: infer V, ...args: any) => any) ? Awaited<V> : never) : unknown, limit: number, totalPages: number, page: number}>}
  */
 const getOrdersByUserId = async (userId, filter, options) => {
   const { sortBy, limit = 10, page = 1 } = options;
@@ -233,7 +235,7 @@ const getOrdersByUserId = async (userId, filter, options) => {
   const countPromise = Order.countDocuments({ user: userId, ...filter });
   const [count, orders] = await Promise.all([countPromise, ordersPromise]);
   return {
-    datas: orders,
+    data: orders,
     page,
     limit,
     totalPages: Math.ceil(count / limit),
@@ -327,6 +329,6 @@ module.exports = {
   getOrderById,
   processPaymentOrder,
   checkoutOrder,
-  getAllOrders,
+  getAllUserOrders,
   getOrdersByUserId,
 };
