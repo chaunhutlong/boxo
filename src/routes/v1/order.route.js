@@ -17,6 +17,8 @@ router.route('/payment').post(auth(), validate(orderValidation.processPaymentOrd
 
 router.route('/checkout').post(auth(), validate(orderValidation.checkoutOrder), orderController.checkoutOrder);
 
+router.route('/all').get(auth(), validate(orderValidation.getOrders), orderController.getOrdersofAllUser);
+
 module.exports = router;
 
 /**

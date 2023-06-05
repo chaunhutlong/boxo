@@ -44,10 +44,17 @@ const checkoutOrder = {
   }),
 };
 
+const getOrderById = {
+  query: Joi.object().keys({
+    orderId: Joi.string().custom(objectId),
+  }),
+};
+
 module.exports = {
   updateShipping,
   getOrders,
   processPaymentOrder,
   paramsOrderId,
   checkoutOrder,
+  getOrderById,
 };
