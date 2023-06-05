@@ -205,10 +205,11 @@ const getAllOrders = async (filter, options) => {
   }));
 
   return {
-    orders: mappedOrders,
-    totalOrders: count,
-    currentPage: page,
+    datas: mappedOrders,
+    page,
+    limit,
     totalPages: Math.ceil(count / limit),
+    totalResults: count,
   };
 };
 
