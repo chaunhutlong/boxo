@@ -12,7 +12,7 @@ const createReview = {
 
 const getReviews = {
   query: Joi.object().keys({
-    bookId: Joi.string().required(),
+    bookId: Joi.string(),
   }),
 };
 
