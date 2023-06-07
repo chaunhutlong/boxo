@@ -42,7 +42,8 @@ const createReview = async (currentUserId, reviewBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryReviews = async (filter, options) => {
-  return Review.paginate(filter, options);
+  const reviews = await Review.paginate(filter, options);
+  return reviews;
 };
 
 /**
@@ -73,14 +74,14 @@ const updateReviewById = async (reviewId, updateBody) => {
 
   const { comment, rating } = updateBody;
 
-  if (comment !== review.comment || rating !== review.rating) {
-    review.comment = comment;
+  if (rating !== review.rating) {
     review.rating = rating;
-
-    await review.save();
     await updateBookRating(review.bookId);
   }
-
+  if (comment !== review.comment) {
+    review.comment = comment;
+  }
+  await review.save();
   return review;
 };
 
