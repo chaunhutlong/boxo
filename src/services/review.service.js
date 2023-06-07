@@ -26,7 +26,6 @@ const createReview = async (currentUserId, reviewBody) => {
     rating,
     comment,
   });
-
   await review.save();
   await updateBookRating(bookId);
   return review.populate('user').execPopulate();
@@ -42,8 +41,7 @@ const createReview = async (currentUserId, reviewBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryReviews = async (filter, options) => {
-  const reviews = await Review.paginate(filter, options);
-  return reviews;
+  return Review.paginate(filter, options);
 };
 
 /**

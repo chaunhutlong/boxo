@@ -12,6 +12,11 @@ const updateShipping = catchAsync(async (req, res) => {
   res.send(shipping);
 });
 
+const updateOrder = catchAsync(async (req, res) => {
+  const order = await orderService.updateStatusOrder(req.params.orderId, req.body);
+  res.send(order);
+});
+
 const getOrders = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['status']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
@@ -39,13 +44,12 @@ const checkoutOrder = catchAsync(async (req, res) => {
   res.send(order);
 });
 
-const getAllUserOrders = catchAsync(async (req, res) => {
+const getOrdersofAllUser = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['status']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
-  const result = await orderService.getAllUserOrders(filter, options);
+  const result = await orderService.getAllOrders(filter, options);
   res.send(result);
 });
-
 const getOrdersByUserId = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['status']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
@@ -60,6 +64,7 @@ module.exports = {
   getOrderById,
   processPaymentOrder,
   checkoutOrder,
-  getAllUserOrders,
+  getOrdersofAllUser,
   getOrdersByUserId,
+  updateOrder,
 };
