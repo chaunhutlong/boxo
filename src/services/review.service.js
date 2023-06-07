@@ -1,6 +1,16 @@
 const httpStatus = require('http-status');
 const { Review } = require('../models');
+const { Book } = require('../models');
 const ApiError = require('../utils/ApiError');
+
+const updateBookRating = async (bookId) => {
+  const book = await Book.findById(bookId);
+  const reviews = await Review.find({ bookId });
+
+  const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+  book.rating = Number((totalRating / reviews.length).toFixed(1));
+  await book.save();
+};
 
 /**
  * Create a review
@@ -16,7 +26,9 @@ const createReview = async (currentUserId, reviewBody) => {
     rating,
     comment,
   });
+
   await review.save();
+  await updateBookRating(bookId);
   return review.populate('user').execPopulate();
 };
 
@@ -30,7 +42,8 @@ const createReview = async (currentUserId, reviewBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryReviews = async (filter, options) => {
-  return Review.paginate(filter, options);
+  const reviews = await Review.paginate(filter, options);
+  return reviews;
 };
 
 /**
@@ -61,9 +74,13 @@ const updateReviewById = async (reviewId, updateBody) => {
 
   const { comment, rating } = updateBody;
 
-  review.comment = comment;
-  review.rating = rating;
-
+  if (rating !== review.rating) {
+    review.rating = rating;
+    await updateBookRating(review.bookId);
+  }
+  if (comment !== review.comment) {
+    review.comment = comment;
+  }
   await review.save();
   return review;
 };
