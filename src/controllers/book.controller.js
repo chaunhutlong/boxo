@@ -41,8 +41,7 @@ const getBookByISBN = catchAsync(async (req, res) => {
 });
 
 const crawlBook = catchAsync(async (req, res) => {
-  const { query } = req.body;
-  const book = await bookService.crawlBook(query);
+  const book = await bookService.crawlBook(req.body);
   res.send(book);
 });
 

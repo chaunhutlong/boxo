@@ -158,16 +158,22 @@ const getBookByISBN = async (isbn) => {
 /**
  * Crawl data from google book api
  * @returns {Promise<{image: {url: *}, thumbnail: *, isbn: *, description: *, language: *, priceDiscount: null, price, name: *, totalPages: *, publisher: *, publishedDate: *, categories: *, authors: *}[]>}
- * @param query
+ * @param {Object} body
  */
-const crawlBook = async (query) => {
+const crawlBook = async (body) => {
   try {
+    const { genre, lang, keyword } = body;
+    let query = keyword;
+    if (genre) {
+      query += `+subject:${genre}`;
+    }
+
     const apiKey = process.env.GOOGLE_BOOK_API_KEY;
     const baseUrl = 'https://www.googleapis.com/books/v1/volumes';
     const maxResults = 40;
 
     // Make the initial API request to get the total number of items
-    const initialResponse = await axios.get(`${baseUrl}?q=${query}&key=${apiKey}&printType=books`);
+    const initialResponse = await axios.get(`${baseUrl}?q=${query}&key=${apiKey}&printType=books&langRestrict=${lang}`);
     const { totalItems } = initialResponse.data;
 
     // Calculate the number of requests needed based on totalItems
@@ -214,18 +220,28 @@ const crawlBook = async (query) => {
 
       const thumbnail = imageLinks ? imageLinks.thumbnail : null;
 
+      // find approximately genres in database with categories
       let genresArray = [];
       if (categories && categories.length > 0) {
         genresArray = await Promise.all(
           categories.map(async (category) => {
-            const { _id: genreId } = await Genre.findOneAndUpdate(
-              { name: category },
-              { $set: { name: category } },
-              { upsert: true, new: true }
-            );
-            return genreId;
+            const genreExist = await Genre.findOne({
+              $text: { $search: category },
+            });
+
+            if (genreExist) {
+              return genreExist._id;
+            }
           })
         );
+      }
+
+      // if genresArray is empty, add to other genre
+      if (genresArray.length === 0) {
+        const { _id: genreId } = await Genre.findOne({
+          name: 'Other',
+        });
+        genresArray.push(genreId);
       }
 
       let authorsArray = [];
