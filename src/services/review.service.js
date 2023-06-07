@@ -1,6 +1,16 @@
 const httpStatus = require('http-status');
 const { Review } = require('../models');
+const { Book } = require('../models');
 const ApiError = require('../utils/ApiError');
+
+const updateBookRating = async (bookId) => {
+  const book = await Book.findById(bookId);
+  const reviews = await Review.find({ bookId });
+
+  const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+  book.rating = Number((totalRating / reviews.length).toFixed(1));
+  await book.save();
+};
 
 /**
  * Create a review
@@ -17,6 +27,7 @@ const createReview = async (currentUserId, reviewBody) => {
     comment,
   });
   await review.save();
+  await updateBookRating(bookId);
   return review.populate('user').execPopulate();
 };
 

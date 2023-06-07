@@ -14,7 +14,7 @@ const getProvinces = async () => {
  * @returns {Promise<City>}
  */
 const getCitiesByProvinceId = async (provinceId) => {
-  return City.find({ provinceId });
+  return City.find({ province: provinceId });
 };
 
 module.exports = {

@@ -87,6 +87,12 @@ const bookSchema = mongoose.Schema(
         ref: 'Review',
       },
     ],
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
+      default: null,
+    },
     hasDiscount: {
       type: Boolean,
       default: false,
