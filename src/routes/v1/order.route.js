@@ -17,11 +17,14 @@ router.route('/payment').post(auth(), validate(orderValidation.processPaymentOrd
 
 router.route('/checkout').post(auth(), validate(orderValidation.checkoutOrder), orderController.checkoutOrder);
 
-router.route('/all').get(auth(), validate(orderValidation.getOrders), orderController.getAllUserOrders);
+router.route('/all').get(auth(), validate(orderValidation.getOrders), orderController.getOrdersofAllUser);
 
 router.route('/user/:userId').get(auth(), validate(orderValidation.paramsUserId), orderController.getOrdersByUserId);
 
-router.route('/:orderId').get(auth(), validate(orderValidation.paramsOrderId), orderController.getOrderById);
+router
+  .route('/:orderId')
+  .get(auth(), validate(orderValidation.paramsOrderId), orderController.getOrderById)
+  .put(auth(), validate(orderValidation.updateOrder), orderController.updateOrder);
 
 module.exports = router;
 

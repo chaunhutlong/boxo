@@ -6,11 +6,21 @@ shippingStatuses = Object.values(shippingStatuses);
 paymentTypes = Object.values(paymentTypes);
 
 const { objectId } = require('./custom.validation');
+let { orderStatuses } = require('../config/order.enum');
+
+orderStatuses = Object.values(orderStatuses);
 
 const paramsOrderId = Joi.object().keys({
   orderId: Joi.string().custom(objectId),
 });
-
+const updateOrder = {
+  params: Joi.object().keys({
+    orderId: Joi.string().custom(objectId),
+  }),
+  body: Joi.object().keys({
+    status: Joi.string().valid(...orderStatuses),
+  }),
+};
 const paramsUserId = Joi.object().keys({
   userId: Joi.string().custom(objectId),
 });
@@ -62,4 +72,5 @@ module.exports = {
   checkoutOrder,
   getOrderById,
   paramsUserId,
+  updateOrder,
 };

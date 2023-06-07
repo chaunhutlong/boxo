@@ -106,6 +106,11 @@ const createPayment = async (orderId, totalPayment, type, discount) => {
   });
 };
 
+const updateStatusOrder = async (orderId, orderStatus) => {
+  const order = await Order.findById(orderId);
+  order.status = orderStatus.status;
+  await order.save();
+};
 const updateOrderReferences = async (order, shippingId, paymentId) => {
   order.shipping = shippingId;
   order.payment = paymentId;
@@ -179,9 +184,9 @@ const getOrderById = async (id) => {
 
 /**
  * Get order of all users
- * @returns {Promise<{totalResults: unknown extends (object & {then(onfulfilled: infer F): any}) ? (F extends ((value: infer V, ...args: any) => any) ? Awaited<V> : never) : unknown, data: *, limit: number, totalPages: number, page: number}>}
+ * @returns {Promise<Order>}
  */
-const getAllUserOrders = async (filter, options) => {
+const getAllOrders = async (filter, options) => {
   const { sortBy, limit = 10, page = 1 } = options;
 
   const countPromise = Order.countDocuments(filter);
@@ -207,7 +212,7 @@ const getAllUserOrders = async (filter, options) => {
   }));
 
   return {
-    data: mappedOrders,
+    datas: mappedOrders,
     page,
     limit,
     totalPages: Math.ceil(count / limit),
@@ -218,9 +223,7 @@ const getAllUserOrders = async (filter, options) => {
 /**
  * Get order by user id
  * @param {ObjectId} userId
- * @param filter
- * @param options
- * @returns {Promise<{totalResults: unknown extends (object & {then(onfulfilled: infer F): any}) ? (F extends ((value: infer V, ...args: any) => any) ? Awaited<V> : never) : unknown, data: unknown extends (object & {then(onfulfilled: infer F): any}) ? (F extends ((value: infer V, ...args: any) => any) ? Awaited<V> : never) : unknown, limit: number, totalPages: number, page: number}>}
+ * @returns {Promise<Order>}
  */
 const getOrdersByUserId = async (userId, filter, options) => {
   const { sortBy, limit = 10, page = 1 } = options;
@@ -235,7 +238,7 @@ const getOrdersByUserId = async (userId, filter, options) => {
   const countPromise = Order.countDocuments({ user: userId, ...filter });
   const [count, orders] = await Promise.all([countPromise, ordersPromise]);
   return {
-    data: orders,
+    datas: orders,
     page,
     limit,
     totalPages: Math.ceil(count / limit),
@@ -329,6 +332,7 @@ module.exports = {
   getOrderById,
   processPaymentOrder,
   checkoutOrder,
-  getAllUserOrders,
+  getAllOrders,
   getOrdersByUserId,
+  updateStatusOrder,
 };
