@@ -21,7 +21,10 @@ router.route('/all').get(auth(), validate(orderValidation.getOrders), orderContr
 
 router.route('/user/:userId').get(auth(), validate(orderValidation.paramsUserId), orderController.getOrdersByUserId);
 
-router.route('/:orderId').get(auth(), validate(orderValidation.paramsOrderId), orderController.getOrderById);
+router
+  .route('/:orderId')
+  .get(auth(), validate(orderValidation.paramsOrderId), orderController.getOrderById)
+  .put(auth(), validate(orderValidation.updateOrder), orderController.updateOrder);
 
 module.exports = router;
 

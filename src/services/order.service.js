@@ -106,6 +106,11 @@ const createPayment = async (orderId, totalPayment, type, discount) => {
   });
 };
 
+const updateStatusOrder = async (orderId, orderStatus) => {
+  const order = await Order.findById(orderId);
+  order.status = orderStatus.status;
+  await order.save();
+};
 const updateOrderReferences = async (order, shippingId, paymentId) => {
   order.shipping = shippingId;
   order.payment = paymentId;
@@ -329,4 +334,5 @@ module.exports = {
   checkoutOrder,
   getAllOrders,
   getOrdersByUserId,
+  updateStatusOrder,
 };

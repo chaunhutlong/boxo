@@ -12,6 +12,11 @@ const updateShipping = catchAsync(async (req, res) => {
   res.send(shipping);
 });
 
+const updateOrder = catchAsync(async (req, res) => {
+  const order = await orderService.updateStatusOrder(req.params.orderId, req.body);
+  res.send(order);
+});
+
 const getOrders = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['status']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
@@ -61,4 +66,5 @@ module.exports = {
   checkoutOrder,
   getOrdersofAllUser,
   getOrdersByUserId,
+  updateOrder,
 };
