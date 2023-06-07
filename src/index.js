@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 const http = require('http');
-const cronTime = require('cron-time-generator');
 const { start, apiRoute } = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
 const socketio = require('./websocket/socketio');
 const { agenda } = require('./jobs/index');
+
 let server;
 
 async function startAgenda(io) {
@@ -18,8 +18,7 @@ async function startAgenda(io) {
    *  every sunday at 00:00 : cronTime.everySundayAt(0, 0)
    * */
 
-  await agenda.every('10 minutes', 'statisticsDaily');
-
+  await agenda.every('1 day', 'statisticsDaily');
 }
 
 mongoose.connect(config.mongoose.url, config.mongoose.options).then(async () => {
@@ -34,7 +33,7 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(async () => 
 
     // Pass socketio to express app route
     apiRoute(app, io);
-    startAgenda(io);
+    await startAgenda(io);
 
     server = httpServer.listen(config.port, () => {
       logger.info(`Listening to port ${config.port}`);

@@ -163,7 +163,7 @@ const getBookByISBN = async (isbn) => {
 const crawlBook = async (body) => {
   try {
     const { genre, lang, keyword } = body;
-    let query = keyword;
+    let query = keyword || '';
     if (genre) {
       query += `+subject:${genre}`;
     }
@@ -225,23 +225,26 @@ const crawlBook = async (body) => {
       if (categories && categories.length > 0) {
         genresArray = await Promise.all(
           categories.map(async (category) => {
-            const genreExist = await Genre.findOne({
+            let genreExist = await Genre.findOne({
               $text: { $search: category },
             });
 
-            if (genreExist) {
-              return genreExist._id;
+            if (!genreExist) {
+              // if genre not exist, find genre with similar name in book title
+              genreExist = await Genre.findOne({
+                $text: { $search: title },
+              });
             }
+
+            return genreExist ? genreExist._id : null;
           })
         );
       }
 
       // if genresArray is empty, add to other genre
       if (genresArray.length === 0) {
-        const { _id: genreId } = await Genre.findOne({
-          name: 'Other',
-        });
-        genresArray.push(genreId);
+        const genreOther = await Genre.findOne({ name: 'Other' });
+        genresArray.push(genreOther._id);
       }
 
       let authorsArray = [];
