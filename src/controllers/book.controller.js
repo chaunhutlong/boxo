@@ -1,7 +1,7 @@
 const httpStatus = require('http-status');
 const pick = require('../utils/pick');
 const catchAsync = require('../utils/catchAsync');
-const { bookService, reviewService } = require('../services');
+const { bookService } = require('../services');
 
 const createBook = catchAsync(async (req, res) => {
   const { images, ...bookBody } = req.body;
@@ -20,9 +20,7 @@ const getBooks = catchAsync(async (req, res) => {
 
 const getBook = catchAsync(async (req, res) => {
   const book = await bookService.getBookById(req.params.bookId);
-  const reviews = await reviewService.getReviewsByBookId(req.params.bookId);
-  const data = { book, reviews };
-  res.send(data);
+  res.send(book);
 });
 
 const updateBook = catchAsync(async (req, res) => {

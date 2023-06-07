@@ -41,7 +41,7 @@ const deleteReview = {
   }),
 };
 
-const getReviwsByBookId = {
+const getReviewsByBookId = {
   params: Joi.object().keys({
     bookId: Joi.string().required(),
   }),
@@ -52,5 +52,5 @@ module.exports = {
   getReview,
   updateReview,
   deleteReview,
-  getReviwsByBookId,
+  getReviewsByBookId,
 };
