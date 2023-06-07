@@ -24,13 +24,24 @@ const { bucket } = require('../../config/s3.enum');
 
 const paginateBook = (schema) => {
   schema.statics.paginate = async function (filter, options) {
-    const { query, search } = filter;
+    const { query, genres, authors, search, publisher } = filter;
 
     // Apply text search if a search query is provided
     const textSearchQuery = search ? { $text: { $search: search } } : {};
 
     // Merge the text search query with the filter query
     const combinedFilter = { ...query, ...textSearchQuery };
+
+    if (genres) {
+      combinedFilter.genres = { $in: genres };
+    }
+    if (authors) {
+      combinedFilter.authors = { $in: authors };
+    }
+
+    if (publisher) {
+      combinedFilter.publisher = publisher;
+    }
 
     const sort = options.sortBy ? createSortingCriteria(options.sortBy) : 'createdAt';
     const limit = getLimit(options.limit);

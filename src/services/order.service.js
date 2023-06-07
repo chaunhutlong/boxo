@@ -5,14 +5,16 @@ const { orderStatuses } = require('../config/order.enum');
 const { discountTypes } = require('../config/discount.enum');
 const ApiError = require('../utils/ApiError');
 
-const getCart = async (userId) => {
-  return Cart.findOne({ userId });
-};
-
 const validateCart = (cart) => {
   if (!cart || cart.items.length === 0) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Cart is empty');
   }
+};
+
+const getCheckedCart = async (userId) => {
+  const cart = await Cart.findOne({ userId, 'items.isChecked': true });
+  validateCart(cart);
+  return cart;
 };
 
 const validateAddress = (address) => {
@@ -23,7 +25,7 @@ const validateAddress = (address) => {
 
 const getDefaultAddress = async (userId) => {
   return Address.findOne({ userId, isDefault: true }).populate({
-    path: 'city',
+    path: 'cityId',
     populate: {
       path: 'province',
     },
@@ -176,14 +178,79 @@ const getOrderById = async (id) => {
 };
 
 /**
+ * Get order of all users
+ * @returns {Promise<{totalResults: unknown extends (object & {then(onfulfilled: infer F): any}) ? (F extends ((value: infer V, ...args: any) => any) ? Awaited<V> : never) : unknown, data: *, limit: number, totalPages: number, page: number}>}
+ */
+const getAllUserOrders = async (filter, options) => {
+  const { sortBy, limit = 10, page = 1 } = options;
+
+  const countPromise = Order.countDocuments(filter);
+  const ordersPromise = Order.find(filter)
+    .populate('books.bookId')
+    .populate('user')
+    .populate('payment')
+    .sort(sortBy)
+    .skip((page - 1) * limit)
+    .limit(limit);
+
+  const [count, orders] = await Promise.all([countPromise, ordersPromise]);
+
+  const mappedOrders = orders.map((order) => ({
+    orderId: order._id,
+    userId: order.user._id,
+    userName: order.user.name,
+    quantity: order.books.reduce((total, item) => total + item.quantity, 0),
+    date: order.createdAt,
+    paymentMethod: order.payment.type,
+    totalPrice: order.totalPayment,
+    status: order.status,
+  }));
+
+  return {
+    data: mappedOrders,
+    page,
+    limit,
+    totalPages: Math.ceil(count / limit),
+    totalResults: count,
+  };
+};
+
+/**
+ * Get order by user id
+ * @param {ObjectId} userId
+ * @param filter
+ * @param options
+ * @returns {Promise<{totalResults: unknown extends (object & {then(onfulfilled: infer F): any}) ? (F extends ((value: infer V, ...args: any) => any) ? Awaited<V> : never) : unknown, data: unknown extends (object & {then(onfulfilled: infer F): any}) ? (F extends ((value: infer V, ...args: any) => any) ? Awaited<V> : never) : unknown, limit: number, totalPages: number, page: number}>}
+ */
+const getOrdersByUserId = async (userId, filter, options) => {
+  const { sortBy, limit = 10, page = 1 } = options;
+
+  const ordersPromise = await Order.find({ user: userId, ...filter })
+    .populate('books.bookId')
+    .populate('shipping')
+    .populate('payment')
+    .sort(sortBy)
+    .skip((page - 1) * limit)
+    .limit(limit);
+  const countPromise = Order.countDocuments({ user: userId, ...filter });
+  const [count, orders] = await Promise.all([countPromise, ordersPromise]);
+  return {
+    data: orders,
+    page,
+    limit,
+    totalPages: Math.ceil(count / limit),
+    totalResults: count,
+  };
+};
+
+/**
  * Payment order
  * @param {ObjectId} userId
  * @param {Object} paymentDetails
  * @returns {Promise<Order>}
  */
 const processPaymentOrder = async (userId, paymentDetails) => {
-  const cart = await getCart(userId);
-  validateCart(cart);
+  const cart = await getCheckedCart(userId);
 
   const { totalPayment, discount } = await calculateTotalPayment(cart, paymentDetails.discountCode);
 
@@ -194,7 +261,7 @@ const processPaymentOrder = async (userId, paymentDetails) => {
   const totalPaymentWithShipping = totalPayment + shippingCost;
 
   const order = await createOrder(userId, totalPaymentWithShipping, discount, cart.items);
-  const cityAddress = formatCityAddress(address.city, address.name, address.phone, address.description);
+  const cityAddress = formatCityAddress(address.cityId, address.name, address.phone, address.description);
   const shipping = await createShipping(cityAddress, shippingCost, order._id);
   const payment = await createPayment(order._id, totalPaymentWithShipping, paymentDetails.type, discount);
 
@@ -262,4 +329,6 @@ module.exports = {
   getOrderById,
   processPaymentOrder,
   checkoutOrder,
+  getAllUserOrders,
+  getOrdersByUserId,
 };
