@@ -175,7 +175,7 @@ const queryOrders = async (filter, options) => {
  * @returns {Promise<Order>}
  */
 const getOrderById = async (id) => {
-  const order = await Order.findById(id).populate('books.bookId').populate('shipping').populate('payment');
+  const order = await Order.findById(id).populate('books.bookId').populate('shipping').populate('payment').populate('user');
   if (!order) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
   }
