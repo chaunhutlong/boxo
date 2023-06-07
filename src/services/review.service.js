@@ -72,9 +72,13 @@ const updateReviewById = async (reviewId, updateBody) => {
 
   const { comment, rating } = updateBody;
 
-  review.comment = comment;
-  review.rating = rating;
-
+  if (rating !== review.rating) {
+    review.rating = rating;
+    await updateBookRating(review.bookId);
+  }
+  if (comment !== review.comment) {
+    review.comment = comment;
+  }
   await review.save();
   return review;
 };
