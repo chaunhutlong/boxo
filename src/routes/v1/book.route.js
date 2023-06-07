@@ -4,6 +4,7 @@ const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
 const bookValidation = require('../../validations/book.validation');
 const bookController = require('../../controllers/book.controller');
+const reviewValidation = require('../../validations/review.validation');
 
 const { roles } = require('../../config/role.enum');
 
@@ -17,7 +18,7 @@ router
 
 router
   .route('/:bookId')
-  .get(validate(bookValidation.getBook), bookController.getBook)
+  .get(validate(bookValidation.getBook, reviewValidation.getReviewsByBookId), bookController.getBook)
   .put(auth(roles.ADMIN, roles.MANAGER), upload.array(), validate(bookValidation.updateBook), bookController.updateBook)
   .delete(auth(roles.ADMIN, roles.MANAGER), validate(bookValidation.deleteBook), bookController.deleteBook);
 

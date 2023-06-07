@@ -17,6 +17,8 @@ router
   .patch(auth(), validate(reviewValidation.updateReview), reviewController.updateReview)
   .delete(auth(), validate(reviewValidation.deleteReview), reviewController.deleteReview);
 
+router.route('/book/:bookId').get(validate(reviewValidation.getReviewsByBookId), reviewController.getReiewsByBookId);
+
 module.exports = router;
 
 /**

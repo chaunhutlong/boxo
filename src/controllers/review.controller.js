@@ -31,10 +31,16 @@ const deleteReview = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const getReiewsByBookId = catchAsync(async (req, res) => {
+  const reviews = await reviewService.getReviewsByBookId(req.params.bookId);
+  res.send(reviews);
+});
+
 module.exports = {
   createReview,
   getReviews,
   getReview,
   updateReview,
   deleteReview,
+  getReiewsByBookId,
 };

@@ -20,7 +20,6 @@ const getBooks = catchAsync(async (req, res) => {
 
 const getBook = catchAsync(async (req, res) => {
   const book = await bookService.getBookById(req.params.bookId);
-
   res.send(book);
 });
 
