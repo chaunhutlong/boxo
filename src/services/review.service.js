@@ -6,17 +6,9 @@ const ApiError = require('../utils/ApiError');
 const updateBookRating = async (bookId) => {
   const book = await Book.findById(bookId);
   const reviews = await Review.find({ bookId });
-  if (!book) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Book not found');
-  }
 
-  // Calculate the average rating
-  let totalRating = 0;
-  reviews.forEach((review) => {
-    totalRating += review.rating;
-  });
-  book.rating = totalRating / reviews.length;
-
+  const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+  book.rating = Number((totalRating / reviews.length).toFixed(1));
   await book.save();
 };
 
@@ -81,11 +73,14 @@ const updateReviewById = async (reviewId, updateBody) => {
 
   const { comment, rating } = updateBody;
 
-  review.comment = comment;
-  review.rating = rating;
+  if (comment !== review.comment || rating !== review.rating) {
+    review.comment = comment;
+    review.rating = rating;
 
-  await review.save();
-  await updateBookRating(review.bookId);
+    await review.save();
+    await updateBookRating(review.bookId);
+  }
+
   return review;
 };
 
