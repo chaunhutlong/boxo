@@ -100,7 +100,7 @@ const deleteReviewById = async (reviewId) => {
  * @returns {Promise<Review>}
  * */
 const getReviewsByBookId = async (bookId) => {
-  const reviews = await Review.find({ bookId }).populate('user');
+  const reviews = await Review.find({ bookId }).populate('user').select('-bookId');
   return reviews;
 };
 
