@@ -9,7 +9,7 @@ const createReview = catchAsync(async (req, res) => {
 });
 
 const getReviews = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['bookId']);
+  const filter = pick(req.query, ['bookId', 'user']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
   options.populate = 'user';
   const result = await reviewService.queryReviews(filter, options);
@@ -31,16 +31,10 @@ const deleteReview = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
-const getReiewsByBookId = catchAsync(async (req, res) => {
-  const reviews = await reviewService.getReviewsByBookId(req.params.bookId);
-  res.send(reviews);
-});
-
 module.exports = {
   createReview,
   getReviews,
   getReview,
   updateReview,
   deleteReview,
-  getReiewsByBookId,
 };
