@@ -117,16 +117,6 @@ const updateOrderReferences = async (order, shippingId, paymentId) => {
   await order.save();
 };
 
-const updateBookQuantities = async (items) => {
-  const bookUpdates = items.map((item) => ({
-    updateOne: {
-      filter: { _id: item.bookId },
-      update: { $inc: { availableQuantity: -item.quantity } },
-    },
-  }));
-  await Book.bulkWrite(bookUpdates);
-};
-
 /**
  * Get shipping by orderId
  * @param {ObjectId} orderId
@@ -243,8 +233,16 @@ const getOrdersByUserId = async (userId, filter, options) => {
   };
 };
 
-const removeItemsFromCart = async (cart, items) => {
-  cart.items = cart.items.filter((item) => !items.includes(item.bookId.toString()));
+// Remove items checked from cart
+const removeCheckedItems = async (cart, checkedItems) => {
+  const bookUpdates = checkedItems.map((item) => ({
+    updateOne: {
+      filter: { _id: item.bookId },
+      update: { $inc: { availableQuantity: item.quantity } },
+    },
+  }));
+  await Book.bulkWrite(bookUpdates);
+  cart.items = cart.items.filter((item) => !item.isChecked);
   await cart.save();
 };
 
@@ -273,10 +271,9 @@ const processPaymentOrder = async (userId, paymentDetails) => {
   const payment = await createPayment(order._id, totalPaymentWithShipping, paymentDetails.type, discount);
 
   await updateOrderReferences(order, shipping._id, payment._id);
-  await updateBookQuantities(checkedItems);
 
   // Only remove items from cart where isChecked = true
-  await removeItemsFromCart(cart, checkedItems);
+  await removeCheckedItems(userId);
 
   return order;
 };
