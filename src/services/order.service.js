@@ -238,7 +238,7 @@ const removeCheckedItems = async (cart, checkedItems) => {
   const bookUpdates = checkedItems.map((item) => ({
     updateOne: {
       filter: { _id: item.bookId },
-      update: { $inc: { availableQuantity: item.quantity } },
+      update: { $inc: { availableQuantity: -item.quantity } },
     },
   }));
   await Book.bulkWrite(bookUpdates);
