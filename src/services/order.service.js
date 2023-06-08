@@ -273,7 +273,7 @@ const processPaymentOrder = async (userId, paymentDetails) => {
   await updateOrderReferences(order, shipping._id, payment._id);
 
   // Only remove items from cart where isChecked = true
-  await removeCheckedItems(userId);
+  await removeCheckedItems(cart, checkedItems);
 
   return order;
 };
