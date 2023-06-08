@@ -127,11 +127,6 @@ const updateBookQuantities = async (items) => {
   await Book.bulkWrite(bookUpdates);
 };
 
-const clearCart = async (cart) => {
-  cart.items = [];
-  await cart.save();
-};
-
 /**
  * Get shipping by orderId
  * @param {ObjectId} orderId
@@ -223,6 +218,8 @@ const getAllOrders = async (filter, options) => {
 /**
  * Get order by user id
  * @param {ObjectId} userId
+ * @param filter
+ * @param options
  * @returns {Promise<Order>}
  */
 const getOrdersByUserId = async (userId, filter, options) => {
@@ -246,6 +243,11 @@ const getOrdersByUserId = async (userId, filter, options) => {
   };
 };
 
+const removeItemsFromCart = async (cart, items) => {
+  cart.items = cart.items.filter((item) => !items.includes(item.bookId.toString()));
+  await cart.save();
+};
+
 /**
  * Payment order
  * @param {ObjectId} userId
@@ -255,6 +257,8 @@ const getOrdersByUserId = async (userId, filter, options) => {
 const processPaymentOrder = async (userId, paymentDetails) => {
   const cart = await getCheckedCart(userId);
 
+  const checkedItems = cart.items.filter((item) => item.isChecked);
+
   const { totalPayment, discount } = await calculateTotalPayment(cart, paymentDetails.discountCode);
 
   const address = await getDefaultAddress(userId);
@@ -263,15 +267,16 @@ const processPaymentOrder = async (userId, paymentDetails) => {
   const shippingCost = await calculateShippingCost(address.distance);
   const totalPaymentWithShipping = totalPayment + shippingCost;
 
-  const order = await createOrder(userId, totalPaymentWithShipping, discount, cart.items);
+  const order = await createOrder(userId, totalPaymentWithShipping, discount, checkedItems);
   const cityAddress = formatCityAddress(address.cityId, address.name, address.phone, address.description);
   const shipping = await createShipping(cityAddress, shippingCost, order._id);
   const payment = await createPayment(order._id, totalPaymentWithShipping, paymentDetails.type, discount);
 
   await updateOrderReferences(order, shipping._id, payment._id);
-  await updateBookQuantities(cart.items);
+  await updateBookQuantities(checkedItems);
 
-  await clearCart(cart);
+  // Only remove items from cart where isChecked = true
+  await removeItemsFromCart(cart, checkedItems);
 
   return order;
 };
