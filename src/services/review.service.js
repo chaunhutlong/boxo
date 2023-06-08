@@ -94,10 +94,21 @@ const deleteReviewById = async (reviewId) => {
   return review;
 };
 
+/**
+ * Get reviews by book id
+ * @param {ObjectId} bookId
+ * @returns {Promise<Review>}
+ * */
+const getReviewsByBookId = async (bookId) => {
+  const reviews = await Review.find({ bookId }).populate('user').select('-bookId');
+  return reviews;
+};
+
 module.exports = {
   createReview,
   queryReviews,
   getReviewById,
   updateReviewById,
   deleteReviewById,
+  getReviewsByBookId,
 };

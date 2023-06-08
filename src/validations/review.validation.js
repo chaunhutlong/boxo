@@ -12,7 +12,8 @@ const createReview = {
 
 const getReviews = {
   query: Joi.object().keys({
-    bookId: Joi.string().required(),
+    // bookId: Joi.string().required(),
+    bookId: Joi.string(),
   }),
 };
 
@@ -40,10 +41,16 @@ const deleteReview = {
   }),
 };
 
+const getReviewsByBookId = {
+  params: Joi.object().keys({
+    bookId: Joi.string().required(),
+  }),
+};
 module.exports = {
   createReview,
   getReviews,
   getReview,
   updateReview,
   deleteReview,
+  getReviewsByBookId,
 };
