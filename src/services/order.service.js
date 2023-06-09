@@ -3,6 +3,7 @@ const { Book, Order, Shipping, Address, Cart, Discount, Payment } = require('../
 const { shippingStatuses } = require('../config/shipping.enum');
 const { orderStatuses } = require('../config/order.enum');
 const { discountTypes } = require('../config/discount.enum');
+const { createSortingCriteria, getLimit, getPage } = require('../models/plugins/paginate.generic');
 const ApiError = require('../utils/ApiError');
 
 const validateCart = (cart) => {
@@ -117,21 +118,6 @@ const updateOrderReferences = async (order, shippingId, paymentId) => {
   await order.save();
 };
 
-const updateBookQuantities = async (items) => {
-  const bookUpdates = items.map((item) => ({
-    updateOne: {
-      filter: { _id: item.bookId },
-      update: { $inc: { availableQuantity: -item.quantity } },
-    },
-  }));
-  await Book.bulkWrite(bookUpdates);
-};
-
-const clearCart = async (cart) => {
-  cart.items = [];
-  await cart.save();
-};
-
 /**
  * Get shipping by orderId
  * @param {ObjectId} orderId
@@ -175,7 +161,7 @@ const queryOrders = async (filter, options) => {
  * @returns {Promise<Order>}
  */
 const getOrderById = async (id) => {
-  const order = await Order.findById(id).populate('books.bookId').populate('shipping').populate('payment');
+  const order = await Order.findById(id).populate('books.bookId').populate('shipping').populate('payment').populate('user');
   if (!order) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
   }
@@ -187,7 +173,9 @@ const getOrderById = async (id) => {
  * @returns {Promise<Order>}
  */
 const getAllOrders = async (filter, options) => {
-  const { sortBy, limit = 10, page = 1 } = options;
+  const sortBy = options.sortBy ? createSortingCriteria(options.sortBy) : 'createdAt';
+  const limit = getLimit(options.limit);
+  const page = getPage(options.page);
 
   const countPromise = Order.countDocuments(filter);
   const ordersPromise = Order.find(filter)
@@ -223,6 +211,8 @@ const getAllOrders = async (filter, options) => {
 /**
  * Get order by user id
  * @param {ObjectId} userId
+ * @param filter
+ * @param options
  * @returns {Promise<Order>}
  */
 const getOrdersByUserId = async (userId, filter, options) => {
@@ -246,6 +236,19 @@ const getOrdersByUserId = async (userId, filter, options) => {
   };
 };
 
+// Remove items checked from cart
+const removeCheckedItems = async (cart, checkedItems) => {
+  const bookUpdates = checkedItems.map((item) => ({
+    updateOne: {
+      filter: { _id: item.bookId },
+      update: { $inc: { availableQuantity: -item.quantity } },
+    },
+  }));
+  await Book.bulkWrite(bookUpdates);
+  cart.items = cart.items.filter((item) => !item.isChecked);
+  await cart.save();
+};
+
 /**
  * Payment order
  * @param {ObjectId} userId
@@ -255,6 +258,8 @@ const getOrdersByUserId = async (userId, filter, options) => {
 const processPaymentOrder = async (userId, paymentDetails) => {
   const cart = await getCheckedCart(userId);
 
+  const checkedItems = cart.items.filter((item) => item.isChecked);
+
   const { totalPayment, discount } = await calculateTotalPayment(cart, paymentDetails.discountCode);
 
   const address = await getDefaultAddress(userId);
@@ -263,15 +268,15 @@ const processPaymentOrder = async (userId, paymentDetails) => {
   const shippingCost = await calculateShippingCost(address.distance);
   const totalPaymentWithShipping = totalPayment + shippingCost;
 
-  const order = await createOrder(userId, totalPaymentWithShipping, discount, cart.items);
+  const order = await createOrder(userId, totalPaymentWithShipping, discount, checkedItems);
   const cityAddress = formatCityAddress(address.cityId, address.name, address.phone, address.description);
   const shipping = await createShipping(cityAddress, shippingCost, order._id);
   const payment = await createPayment(order._id, totalPaymentWithShipping, paymentDetails.type, discount);
 
   await updateOrderReferences(order, shipping._id, payment._id);
-  await updateBookQuantities(cart.items);
 
-  await clearCart(cart);
+  // Only remove items from cart where isChecked = true
+  await removeCheckedItems(cart, checkedItems);
 
   return order;
 };
