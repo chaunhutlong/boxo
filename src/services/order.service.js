@@ -5,6 +5,8 @@ const { orderStatuses } = require('../config/order.enum');
 const { discountTypes } = require('../config/discount.enum');
 const { createSortingCriteria, getLimit, getPage } = require('../models/plugins/paginate.generic');
 const ApiError = require('../utils/ApiError');
+const { createNotification } = require('./notification.service');
+const { notificationTypes } = require('../config/notification.enum');
 
 const validateCart = (cart) => {
   if (!cart || cart.items.length === 0) {
@@ -41,8 +43,8 @@ const getAvailableDiscount = async (discountCode) => {
   return Discount.getAvailableDiscount(discountCode);
 };
 
-const calculateTotalPayment = async (cart, discountCode) => {
-  let totalPayment = cart.items.reduce((total, item) => total + item.totalPrice, 0);
+const calculateTotalPayment = async (items, discountCode) => {
+  let totalPayment = items.reduce((acc, item) => acc + item.totalPrice, 0);
   let discount = null;
 
   if (discountCode) {
@@ -253,14 +255,15 @@ const removeCheckedItems = async (cart, checkedItems) => {
  * Payment order
  * @param {ObjectId} userId
  * @param {Object} paymentDetails
+ * @param socket - socket io
  * @returns {Promise<Order>}
  */
-const processPaymentOrder = async (userId, paymentDetails) => {
+const processPaymentOrder = async (userId, paymentDetails, socket) => {
   const cart = await getCheckedCart(userId);
 
   const checkedItems = cart.items.filter((item) => item.isChecked);
 
-  const { totalPayment, discount } = await calculateTotalPayment(cart, paymentDetails.discountCode);
+  const { totalPayment, discount } = await calculateTotalPayment(checkedItems, paymentDetails.discountCode);
 
   const address = await getDefaultAddress(userId);
   validateAddress(address);
@@ -277,6 +280,20 @@ const processPaymentOrder = async (userId, paymentDetails) => {
 
   // Only remove items from cart where isChecked = true
   await removeCheckedItems(cart, checkedItems);
+
+  const content = `Đơn hàng ${order._id} của bạn đã được đặt thành công`;
+  const bodyNotification = {
+    title: 'Đơn hàng mới',
+    content,
+    type: notificationTypes.ORDER,
+    userId,
+    orderId: order._id,
+    orderStatus: order.status,
+  };
+
+  // Create notification and emit to user
+  await createNotification(bodyNotification);
+  socket.to(userId).emit('notification', { content });
 
   return order;
 };

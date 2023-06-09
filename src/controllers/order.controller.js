@@ -34,7 +34,7 @@ const getOrderById = catchAsync(async (req, res) => {
 });
 
 const processPaymentOrder = catchAsync(async (req, res) => {
-  const order = await orderService.processPaymentOrder(req.user.id, req.body);
+  const order = await orderService.processPaymentOrder(req.user.id, req.body, res.io);
   res.send(order);
 });
 
@@ -50,6 +50,7 @@ const getAllUserOrders = catchAsync(async (req, res) => {
   const result = await orderService.getAllOrders(filter, options);
   res.send(result);
 });
+
 const getOrdersByUserId = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['status']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
