@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
 const { toJSON, paginate } = require('./plugins');
+const { orderStatuses } = require('../config/order.enum');
 
 const orderSchema = mongoose.Schema(
   {
@@ -43,6 +44,7 @@ const orderSchema = mongoose.Schema(
     },
     status: {
       type: String,
+      enum: orderStatuses,
       required: true,
     },
     shipping: {

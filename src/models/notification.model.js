@@ -1,10 +1,15 @@
 const mongoose = require('mongoose');
 const { notificationTypes } = require('../config/notification.enum');
+const { orderStatuses } = require('../config/order.enum');
 
 const notificationSchema = new mongoose.Schema({
   orderId: {
     type: mongoose.SchemaTypes.ObjectId,
     ref: 'Order',
+  },
+  orderStatus: {
+    type: String,
+    enum: orderStatuses,
   },
   userId: {
     type: mongoose.SchemaTypes.ObjectId,

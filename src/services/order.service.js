@@ -281,16 +281,19 @@ const processPaymentOrder = async (userId, paymentDetails, socket) => {
   // Only remove items from cart where isChecked = true
   await removeCheckedItems(cart, checkedItems);
 
+  const content = `Đơn hàng ${order._id} của bạn đã được đặt thành công`;
   const bodyNotification = {
     title: 'Đơn hàng mới',
-    content: `Đơn hàng ${order._id} của bạn đã được đặt thành công`,
+    content,
     type: notificationTypes.ORDER,
     userId,
+    orderId: order._id,
+    orderStatus: order.status,
   };
 
   // Create notification and emit to user
-  const notification = await createNotification(bodyNotification);
-  socket.to(userId).emit('notification', notification);
+  await createNotification(bodyNotification);
+  socket.to(userId).emit('notification', { content });
 
   return order;
 };
