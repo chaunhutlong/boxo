@@ -99,7 +99,7 @@ shippingSchema.statics.calculateShippingValue = function (distance) {
     case distance >= 30 && distance < 100:
       shippingCost = baseRate + distance * ratePerKm * 0.6;
       break;
-    case distance >= 100:
+    case distance >= 100 && distance < 300:
       shippingCost = baseRate + distance * ratePerKm * 0.5;
       break;
     case distance >= 300:
