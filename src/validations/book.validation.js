@@ -81,28 +81,9 @@ const getBookByISBN = {
   }),
 };
 
-const getPopularBooks = {
-  query: Joi.object().keys({
-    genres: Joi.string().custom(objectId),
-    sortBy: Joi.string(),
-    limit: Joi.number().integer(),
-    page: Joi.number().integer(),
-    search: Joi.string().allow(null, ''),
-    query: Joi.string().allow(null, ''),
-  }),
-};
-
 const getRecommendBooksByBookId = {
   params: Joi.object().keys({
     bookId: Joi.string().custom(objectId),
-  }),
-  query: Joi.object().keys({
-    genres: Joi.string().custom(objectId),
-    sortBy: Joi.string(),
-    limit: Joi.number().integer(),
-    page: Joi.number().integer(),
-    search: Joi.string().allow(null, ''),
-    query: Joi.string().allow(null, ''),
   }),
 };
 
@@ -114,6 +95,5 @@ module.exports = {
   deleteBook,
   searchBooks,
   getBookByISBN,
-  getPopularBooks,
   getRecommendBooksByBookId,
 };

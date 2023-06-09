@@ -15,7 +15,7 @@ router
   .post(auth(roles.ADMIN, roles.MANAGER), upload.array(), validate(bookValidation.createBook), bookController.createBook)
   .get(validate(bookValidation.getBooks), bookController.getBooks);
 
-router.route('/popular').get(validate(bookValidation.getPopularBooks), bookController.getPopularBooks);
+router.route('/popular').get(bookController.getPopularBooks);
 router
   .route('/:bookId/recommend')
   .get(validate(bookValidation.getRecommendBooksByBookId), bookController.getRecommedBooksByBookId);
