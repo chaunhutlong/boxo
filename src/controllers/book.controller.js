@@ -44,6 +44,16 @@ const crawlBook = catchAsync(async (req, res) => {
   res.send(book);
 });
 
+const getPopularBooks = catchAsync(async (req, res) => {
+  const popular = await bookService.getPopularBooks();
+  res.status(httpStatus.OK).send(popular);
+});
+
+const getRecommedBooksByBookId = catchAsync(async (req, res) => {
+  const recommend = await bookService.getRecommedBookByBookId(req.params.bookId);
+  res.status(httpStatus.OK).send(recommend);
+});
+
 module.exports = {
   createBook,
   getBooks,
@@ -52,4 +62,6 @@ module.exports = {
   deleteBook,
   getBookByISBN,
   crawlBook,
+  getPopularBooks,
+  getRecommedBooksByBookId,
 };

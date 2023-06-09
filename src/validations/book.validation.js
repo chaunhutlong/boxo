@@ -81,6 +81,12 @@ const getBookByISBN = {
   }),
 };
 
+const getRecommendBooksByBookId = {
+  params: Joi.object().keys({
+    bookId: Joi.string().custom(objectId),
+  }),
+};
+
 module.exports = {
   createBook,
   getBooks,
@@ -89,4 +95,5 @@ module.exports = {
   deleteBook,
   searchBooks,
   getBookByISBN,
+  getRecommendBooksByBookId,
 };

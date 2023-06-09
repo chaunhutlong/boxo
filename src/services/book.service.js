@@ -300,6 +300,66 @@ const crawlBook = async (body) => {
   }
 };
 
+const getPopularBooks = async () => {
+  try {
+    const response = await axios.get(process.env.RECOMMEND_URL);
+
+    if (response.status === 200) {
+      const { data } = response;
+      const bookIds = data.map((item) => item.bookid);
+
+      const books = await Book.find({ _id: { $in: bookIds } })
+        .populate('genres')
+        .populate('authors')
+        .populate('publisher')
+        .exec();
+
+      const validatedBooks = await Promise.all(
+        books.map(async (book) => {
+          await validateBookAndSignedUrl(book);
+          return book;
+        })
+      );
+
+      const popular = { datas: validatedBooks };
+      return popular;
+    }
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+const getRecommedBookByBookId = async (id) => {
+  try {
+    const url = `${process.env.RECOMMEND_URL}/recommend`;
+    const requestData = { bookid: id };
+    const response = await axios.post(url, requestData);
+
+    if (response.status === 200) {
+      const { data } = response;
+      const bookIds = data.map((item) => item.bookid);
+
+      const books = await Book.find({ _id: { $in: bookIds } })
+        .populate('genres')
+        .populate('authors')
+        .populate('publisher')
+        .exec();
+
+      const validatedBooks = await Promise.all(
+        books.map(async (book) => {
+          await validateBookAndSignedUrl(book);
+          return book;
+        })
+      );
+
+      const recommend = { datas: validatedBooks };
+      return recommend;
+    }
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 module.exports = {
   createBook,
   queryBooks,
@@ -308,4 +368,6 @@ module.exports = {
   deleteBookById,
   getBookByISBN,
   crawlBook,
+  getPopularBooks,
+  getRecommedBookByBookId,
 };
