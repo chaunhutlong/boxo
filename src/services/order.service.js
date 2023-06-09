@@ -5,6 +5,8 @@ const { orderStatuses } = require('../config/order.enum');
 const { discountTypes } = require('../config/discount.enum');
 const { createSortingCriteria, getLimit, getPage } = require('../models/plugins/paginate.generic');
 const ApiError = require('../utils/ApiError');
+const { createNotification } = require('./notification.service');
+const { notificationTypes } = require('../config/notification.enum');
 
 const validateCart = (cart) => {
   if (!cart || cart.items.length === 0) {
@@ -249,23 +251,14 @@ const removeCheckedItems = async (cart, checkedItems) => {
   await cart.save();
 };
 
-// const createNotification = async (userId, orderId) => {
-//   const notification = await Notification.create({
-//     userId,
-//     orderId,
-//     type: notificationTypes.ORDER,
-//     status: notificationStatuses.UNREAD,
-//   });
-//   return notification;
-// }
-
 /**
  * Payment order
  * @param {ObjectId} userId
  * @param {Object} paymentDetails
+ * @param socket - socket io
  * @returns {Promise<Order>}
  */
-const processPaymentOrder = async (userId, paymentDetails) => {
+const processPaymentOrder = async (userId, paymentDetails, socket) => {
   const cart = await getCheckedCart(userId);
 
   const checkedItems = cart.items.filter((item) => item.isChecked);
@@ -288,9 +281,16 @@ const processPaymentOrder = async (userId, paymentDetails) => {
   // Only remove items from cart where isChecked = true
   await removeCheckedItems(cart, checkedItems);
 
+  const bodyNotification = {
+    title: 'Đơn hàng mới',
+    content: `Đơn hàng ${order._id} của bạn đã được đặt thành công`,
+    type: notificationTypes.ORDER,
+    userId,
+  };
+
   // Create notification and emit to user
-  // const notification = await createNotification(userId, order._id, notificationTypes.ORDER);
-  // socket.to(userId).emit('notification', notification);
+  const notification = await createNotification(bodyNotification);
+  socket.to(userId).emit('notification', notification);
 
   return order;
 };

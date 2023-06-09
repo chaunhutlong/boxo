@@ -17,3 +17,4 @@ module.exports.Shipping = require('./shipping.model');
 module.exports.Payment = require('./payment.model');
 module.exports.Post = require('./post.model');
 module.exports.TopOrder = require('./topOrder.model');
+module.exports.Notification = require('./notification.model');

@@ -16,6 +16,7 @@ const discountRoute = require('./discount.route');
 const postRoute = require('./post.route');
 const reviewRoute = require('./review.route');
 const statisticRoute = require('./statistic.route');
+const notificationRoute = require('./notification.route');
 
 const router = express.Router();
 
@@ -79,6 +80,10 @@ const defaultRoutes = [
   {
     path: '/posts',
     route: postRoute,
+  },
+  {
+    path: '/notifications',
+    route: notificationRoute,
   },
 ];
 
