@@ -80,7 +80,7 @@ const resetPassword = async (resetPasswordToken, newPassword, socket) => {
       content: 'Bạn đã thay đổi mật khẩu thành công',
     };
     await createNotification(bodyNotification);
-    await socket.emit('notification', { title });
+    socket.to(user.id).emit('notification', { title });
   } catch (error) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Password reset failed');
   }

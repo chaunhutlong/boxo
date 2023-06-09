@@ -13,7 +13,7 @@ const updateShipping = catchAsync(async (req, res) => {
 });
 
 const updateOrder = catchAsync(async (req, res) => {
-  const order = await orderService.updateStatusOrder(req.params.orderId, req.body);
+  const order = await orderService.updateStatusOrder(req.params.orderId, req.body, res.io);
   res.send(order);
 });
 
