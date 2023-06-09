@@ -135,6 +135,8 @@ const updateStatusOrder = async (orderId, orderStatus, socket) => {
     userId: order.user,
     type: notificationTypes.ORDER,
     title,
+    orderId: order._id,
+    orderStatus: order.status,
     content: `Đơn hàng ${order._id} của bạn đã được cập nhật sang trạng thái ${order.status}`,
   };
 
