@@ -109,9 +109,37 @@ const createPayment = async (orderId, totalPayment, type, discount) => {
   });
 };
 
-const updateStatusOrder = async (orderId, orderStatus) => {
+const updateStatusOrder = async (orderId, orderStatus, socket) => {
   const order = await Order.findById(orderId);
   order.status = orderStatus.status;
+  let title;
+  switch (orderStatus.status) {
+    case orderStatuses.PAID:
+      title = 'Đơn hàng đã được thanh toán';
+      break;
+    case orderStatuses.SHIPPED:
+      title = 'Đơn hàng đã được giao cho đơn vị vận chuyển';
+      break;
+    case orderStatuses.DELIVERED:
+      title = 'Đơn hàng đã được giao thành công';
+      break;
+    case orderStatuses.CANCELED:
+      title = 'Đơn hàng đã bị hủy';
+      break;
+    default:
+      title = 'Đơn hàng đã được cập nhật';
+      break;
+  }
+
+  const bodyNotification = {
+    userId: order.user,
+    type: notificationTypes.ORDER,
+    title,
+    content: `Đơn hàng ${order._id} của bạn đã được cập nhật sang trạng thái ${order.status}`,
+  };
+
+  await createNotification(bodyNotification);
+  socket.to(order.user).emit('notification', { title });
   await order.save();
 };
 const updateOrderReferences = async (order, shippingId, paymentId) => {
@@ -143,6 +171,7 @@ const updateShipping = async (orderId, updateBody) => {
   }
   Object.assign(shipping, updateBody);
   await shipping.save();
+
   return shipping;
 };
 
@@ -283,7 +312,7 @@ const processPaymentOrder = async (userId, paymentDetails, socket) => {
 
   const content = `Đơn hàng ${order._id} của bạn đã được đặt thành công`;
   const bodyNotification = {
-    title: 'Đơn hàng mới',
+    title: 'Đặt hàng thành công',
     content,
     type: notificationTypes.ORDER,
     userId,

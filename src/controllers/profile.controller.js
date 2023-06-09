@@ -13,7 +13,7 @@ const getProfileByUserId = catchAsync(async (req, res) => {
 });
 
 const updatePassword = catchAsync(async (req, res) => {
-  await profileService.updatePassword(req.user.id, req.body);
+  await profileService.updatePassword(req.user.id, req.body, res.io);
 
   res.send({ message: 'Password updated successfully' });
 });

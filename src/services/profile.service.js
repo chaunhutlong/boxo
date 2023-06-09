@@ -2,7 +2,9 @@ const httpStatus = require('http-status');
 const { Profile, User } = require('../models');
 const { deleteFilesFromS3 } = require('../utils/s3');
 const ApiError = require('../utils/ApiError');
+const { createNotification } = require('./notification.service');
 const { bucket } = require('../config/s3.enum');
+const { notificationTypes } = require('../config/notification.enum');
 
 /**
  * Create a profile
@@ -63,9 +65,10 @@ const getProfileByUserId = async (userId) => {
  * Update user password
  * @param {ObjectId} userId
  * @param {Object} body
+ * @param {Object} socket
  * @returns {Promise<User>}
  */
-const updatePassword = async (userId, body) => {
+const updatePassword = async (userId, body, socket) => {
   const user = await User.findById(userId);
 
   if (!(await user.isPasswordMatch(body.oldPassword))) {
@@ -73,6 +76,15 @@ const updatePassword = async (userId, body) => {
   }
 
   user.password = body.newPassword;
+  // if change password successfully, notify to user
+  const bodyNotification = {
+    title: 'Change password',
+    content: 'Your password has been changed. Please login again',
+    type: notificationTypes.USER,
+    user: userId,
+  };
+  await createNotification(bodyNotification);
+  socket.to(userId).emit('notification', { message: 'Your password has been changed. Please login again' });
   await user.save();
 };
 

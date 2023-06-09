@@ -7,6 +7,8 @@ const ApiError = require('../utils/ApiError');
 const { tokenTypes } = require('../config/tokens');
 const { createOrUpdateProfile } = require('./profile.service');
 const { createCart } = require('./cart.service');
+const { createNotification } = require('./notification.service');
+const { notificationTypes } = require('../config/notification.enum');
 
 /**
  * Login with username and password
@@ -58,9 +60,10 @@ const refreshAuth = async (refreshToken) => {
  * Reset password
  * @param {string} resetPasswordToken
  * @param {string} newPassword
+ * @param {Object} socket
  * @returns {Promise}
  */
-const resetPassword = async (resetPasswordToken, newPassword) => {
+const resetPassword = async (resetPasswordToken, newPassword, socket) => {
   try {
     const resetPasswordTokenDoc = await tokenService.verifyToken(resetPasswordToken, tokenTypes.RESET_PASSWORD);
     const user = await userService.getUserById(resetPasswordTokenDoc.user);
@@ -69,6 +72,15 @@ const resetPassword = async (resetPasswordToken, newPassword) => {
     }
     await userService.updateUserById(user.id, { password: newPassword });
     await Token.deleteMany({ user: user.id, type: tokenTypes.RESET_PASSWORD });
+    const title = 'Thay đổi mật khẩu thành công';
+    const bodyNotification = {
+      userId: user.id,
+      title,
+      type: notificationTypes.USER,
+      content: 'Bạn đã thay đổi mật khẩu thành công',
+    };
+    await createNotification(bodyNotification);
+    await socket.emit('notification', { title });
   } catch (error) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Password reset failed');
   }
