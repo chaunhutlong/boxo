@@ -41,8 +41,8 @@ const getAvailableDiscount = async (discountCode) => {
   return Discount.getAvailableDiscount(discountCode);
 };
 
-const calculateTotalPayment = async (cart, discountCode) => {
-  let totalPayment = cart.items.reduce((total, item) => total + item.totalPrice, 0);
+const calculateTotalPayment = async (items, discountCode) => {
+  let totalPayment = items.reduce((acc, item) => acc + item.totalPrice, 0);
   let discount = null;
 
   if (discountCode) {
@@ -249,6 +249,16 @@ const removeCheckedItems = async (cart, checkedItems) => {
   await cart.save();
 };
 
+// const createNotification = async (userId, orderId) => {
+//   const notification = await Notification.create({
+//     userId,
+//     orderId,
+//     type: notificationTypes.ORDER,
+//     status: notificationStatuses.UNREAD,
+//   });
+//   return notification;
+// }
+
 /**
  * Payment order
  * @param {ObjectId} userId
@@ -260,7 +270,7 @@ const processPaymentOrder = async (userId, paymentDetails) => {
 
   const checkedItems = cart.items.filter((item) => item.isChecked);
 
-  const { totalPayment, discount } = await calculateTotalPayment(cart, paymentDetails.discountCode);
+  const { totalPayment, discount } = await calculateTotalPayment(checkedItems, paymentDetails.discountCode);
 
   const address = await getDefaultAddress(userId);
   validateAddress(address);
@@ -277,6 +287,10 @@ const processPaymentOrder = async (userId, paymentDetails) => {
 
   // Only remove items from cart where isChecked = true
   await removeCheckedItems(cart, checkedItems);
+
+  // Create notification and emit to user
+  // const notification = await createNotification(userId, order._id, notificationTypes.ORDER);
+  // socket.to(userId).emit('notification', notification);
 
   return order;
 };
