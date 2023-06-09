@@ -3,6 +3,7 @@ const { Book, Order, Shipping, Address, Cart, Discount, Payment } = require('../
 const { shippingStatuses } = require('../config/shipping.enum');
 const { orderStatuses } = require('../config/order.enum');
 const { discountTypes } = require('../config/discount.enum');
+const { createSortingCriteria, getLimit, getPage } = require('../models/plugins/paginate.generic');
 const ApiError = require('../utils/ApiError');
 
 const validateCart = (cart) => {
@@ -172,7 +173,9 @@ const getOrderById = async (id) => {
  * @returns {Promise<Order>}
  */
 const getAllOrders = async (filter, options) => {
-  const { sortBy, limit = 10, page = 1 } = options;
+  const sortBy = options.sortBy ? createSortingCriteria(options.sortBy) : 'createdAt';
+  const limit = getLimit(options.limit);
+  const page = getPage(options.page);
 
   const countPromise = Order.countDocuments(filter);
   const ordersPromise = Order.find(filter)

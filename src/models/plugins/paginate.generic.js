@@ -20,8 +20,7 @@ const getSkip = (page, limit) => {
 };
 
 const getCount = async (model, filter) => {
-  const count = await model.countDocuments(filter).exec();
-  return count;
+  return model.countDocuments(filter).exec();
 };
 
 const getDocs = async (model, filter, sort, skip, limit, populate) => {
@@ -38,8 +37,7 @@ const getDocs = async (model, filter, sort, skip, limit, populate) => {
     });
   }
 
-  const docs = await docsPromise.exec();
-  return docs;
+  return docsPromise.exec();
 };
 
 module.exports = {
