@@ -1,9 +1,6 @@
-/* eslint-disable no-param-reassign */
-/* eslint-disable prefer-const */
 const { createSortingCriteria, getLimit, getPage, getSkip, getCount, getDocs } = require('./paginate.generic');
 const { getSignedUrl } = require('../../utils/s3');
 const { bucket } = require('../../config/s3.enum');
-
 /**
  * @typedef {Object} QueryResult
  * @property {Document[]} results - Results found
@@ -24,7 +21,7 @@ const { bucket } = require('../../config/s3.enum');
 
 const paginateBook = (schema) => {
   schema.statics.paginate = async function (filter, options) {
-    const { query, genres, authors, search, publisher } = filter;
+    const { query, genres, authors, search, publisher, price } = filter;
 
     // Apply text search if a search query is provided
     const textSearchQuery = search ? { $text: { $search: search } } : {};
@@ -32,8 +29,9 @@ const paginateBook = (schema) => {
     // Merge the text search query with the filter query
     const combinedFilter = { ...query, ...textSearchQuery };
 
-    if (genres) {
-      combinedFilter.genres = { $in: genres };
+    const genresArray = genres ? genres.split(',') : [];
+    if (genresArray.length > 0) {
+      combinedFilter.genres = { $in: genresArray };
     }
     if (authors) {
       combinedFilter.authors = { $in: authors };
@@ -41,6 +39,14 @@ const paginateBook = (schema) => {
 
     if (publisher) {
       combinedFilter.publisher = publisher;
+    }
+    if (price) {
+      const priceArray = price.split(',');
+      if (priceArray.length > 1) {
+        combinedFilter.price = { $gte: priceArray[0], $lte: priceArray[1] };
+      } else {
+        combinedFilter.price = { $gte: priceArray[0] };
+      }
     }
 
     const sort = options.sortBy ? createSortingCriteria(options.sortBy) : 'createdAt';

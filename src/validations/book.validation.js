@@ -21,7 +21,8 @@ const createBook = {
 
 const getBooks = {
   query: Joi.object().keys({
-    genres: Joi.string().custom(objectId),
+    genres: Joi.any(),
+    price: Joi.string(),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),

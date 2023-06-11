@@ -10,7 +10,7 @@ const createBook = catchAsync(async (req, res) => {
 });
 
 const getBooks = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['query', 'search', 'authors', 'genres', 'publisher']);
+  const filter = pick(req.query, ['query', 'search', 'authors', 'genres', 'publisher', 'price']);
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
   options.populate = 'authors,genres,publisher';
 
